@@ -155,6 +155,28 @@ async def get_compliance(user=Depends(get_current_user), db: AsyncSession = Depe
     ]
 
 
+@router.get("/commitments")
+async def get_commitments(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    from app.models import AITask, IntentType
+    result = await db.execute(
+        select(AITask).where(
+            AITask.user_id == user.id,
+            AITask.intent == IntentType.COMMITMENT_CAPTURE
+        ).order_by(desc(AITask.created_at)).limit(50)
+    )
+    return [
+        {
+            "id": str(t.id),
+            "type": "Commitment",
+            "recipient": t.result_data.get("entities", {}).get("client_name", "Team"),
+            "desc": t.input_text,
+            "due": t.created_at.isoformat(),
+            "status": "completed" if t.status.value == "completed" else "active",
+        }
+        for t in result.scalars().all()
+    ]
+
+
 @router.get("/clients")
 async def get_clients(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     from app.models import Client

@@ -6,14 +6,14 @@ import { clsx } from 'clsx'
 import {
   LayoutDashboard, AlertCircle, Users, Zap, Plug, CreditCard,
   LogOut, Menu, X, MessageCircle, Bell, ChevronRight,
-  Mic, FileText, Settings,
+  Mic, FileText, Settings, Target,
 } from 'lucide-react'
 import { clearToken } from '@/lib/api'
 
 const NAV = [
-  { href: '/dashboard',              icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/dashboard/compliance',   icon: AlertCircle,     label: 'Compliance' },
-  { href: '/dashboard/clients',      icon: Users,           label: 'Clients / CRM' },
+  { href: '/dashboard',              icon: LayoutDashboard, label: 'Command Center' },
+  { href: '/dashboard/commitments',  icon: Target,     label: 'Commitments' },
+  { href: '/dashboard/clients',      icon: Users,           label: 'Lead Sniper CRM' },
   { href: '/dashboard/automations',  icon: Zap,             label: 'Automations' },
   { href: '/dashboard/integrations', icon: Plug,            label: 'Integrations' },
   { href: '/dashboard/billing',      icon: CreditCard,      label: 'Billing' },

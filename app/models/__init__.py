@@ -63,6 +63,11 @@ class IntentType(str, enum.Enum):
     WEB_SEARCH = "web_search"
     COMPLIANCE_QUERY = "compliance_query"
     AUTOMATION = "automation"
+    PAYMENT_FOLLOWUP = "payment_followup"
+    COMMITMENT_CAPTURE = "commitment_capture"
+    LEAD_CAPTURE = "lead_capture"
+    DATA_QUERY = "data_query"
+    HABIT_LOG = "habit_log"
     UNKNOWN = "unknown"
 
 

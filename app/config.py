@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     # ── AI / LLM ──────────────────────────────────────────────────────────────
     ANTHROPIC_API_KEY: str = ""
+    GOOGLE_API_KEY: str = ""          # for Gemini 2.0 Flash-Lite
     OPENAI_API_KEY: str = ""          # for Whisper transcription
     GROQ_API_KEY: str = ""            # for cheap fast classification
 

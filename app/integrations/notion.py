@@ -57,10 +57,12 @@ async def setup_vaani_workspace(access_token: str, business_name: str) -> dict:
         _create_meetings_db(access_token, parent_id),
         _create_compliance_db(access_token, parent_id),
         _create_invoices_db(access_token, parent_id),
+        _create_commitments_db(access_token, parent_id),
+        _create_habits_db(access_token, parent_id),
         return_exceptions=True,
     )
 
-    db_names = ["notes", "tasks", "crm", "expenses", "meetings", "compliance", "invoices"]
+    db_names = ["notes", "tasks", "crm", "expenses", "meetings", "compliance", "invoices", "commitments", "habits"]
     result = {"parent_page_id": parent_id}
 
     for name, db in zip(db_names, databases):
@@ -72,29 +74,44 @@ async def setup_vaani_workspace(access_token: str, business_name: str) -> dict:
     log.info("notion.workspace_created", business=business_name, parent=parent_id)
     return result
 
+def _founders_ledger_properties() -> dict:
+    return {
+        "Project": {"select": {"options": []}},
+        "Contact": {"select": {"options": []}},
+        "Priority": {"select": {
+            "options": [
+                {"name": "P1 - Critical", "color": "red"},
+                {"name": "P2 - High", "color": "orange"},
+                {"name": "P3 - Normal", "color": "yellow"}
+            ]
+        }}
+    }
+
 
 async def _create_notes_db(token: str, parent_id: str) -> dict:
+    props = {
+        "Title": {"title": {}},
+        "Summary": {"rich_text": {}},
+        "Tags": {"multi_select": {"options": [
+            {"name": "meeting", "color": "blue"},
+            {"name": "idea", "color": "green"},
+            {"name": "research", "color": "purple"},
+            {"name": "personal", "color": "yellow"},
+        ]}},
+        "Source": {"select": {"options": [
+            {"name": "WhatsApp", "color": "green"},
+            {"name": "Telegram", "color": "blue"},
+            {"name": "Email", "color": "orange"},
+        ]}},
+        "Date": {"date": {}},
+    }
+    props.update(_founders_ledger_properties())
     return await _create_database(
         token=token,
         parent_id=parent_id,
         title="📝 Notes",
         icon="📝",
-        properties={
-            "Title": {"title": {}},
-            "Summary": {"rich_text": {}},
-            "Tags": {"multi_select": {"options": [
-                {"name": "meeting", "color": "blue"},
-                {"name": "idea", "color": "green"},
-                {"name": "research", "color": "purple"},
-                {"name": "personal", "color": "yellow"},
-            ]}},
-            "Source": {"select": {"options": [
-                {"name": "WhatsApp", "color": "green"},
-                {"name": "Telegram", "color": "blue"},
-                {"name": "Email", "color": "orange"},
-            ]}},
-            "Date": {"date": {}},
-        },
+        properties=props,
     )
 
 
@@ -242,6 +259,35 @@ async def _create_invoices_db(token: str, parent_id: str) -> dict:
         },
     )
 
+async def _create_commitments_db(token: str, parent_id: str) -> dict:
+    props = {
+        "Commitment": {"title": {}},
+        "Deadline": {"date": {}},
+        "Status": {"select": {"options": [
+            {"name": "Active", "color": "red"},
+            {"name": "Completed", "color": "green"}
+        ]}},
+        "Recipient": {"rich_text": {}}
+    }
+    props.update(_founders_ledger_properties())
+    return await _create_database(token, parent_id, "🤝 Commitment Board", "🤝", props)
+
+async def _create_habits_db(token: str, parent_id: str) -> dict:
+    return await _create_database(
+        token=token,
+        parent_id=parent_id,
+        title="🔥 Daily Habits",
+        icon="🔥",
+        properties={
+            "Habit": {"title": {}},
+            "Date": {"date": {}},
+            "Status": {"select": {"options": [
+                {"name": "Done", "color": "green"},
+                {"name": "Missed", "color": "red"}
+            ]}},
+            "Streak": {"number": {}}
+        }
+    )
 
 # ── Write Operations ──────────────────────────────────────────────────────────
 
@@ -469,6 +515,67 @@ async def create_compliance_entry(
     page = await _create_db_page(access_token, db_id, properties)
     return page.get("url") if page else None
 
+
+async def create_commitment_entry(
+    access_token: str,
+    workspace_meta: dict,
+    commitment_text: str,
+    deadline: str,
+    recipient: str = "",
+) -> Optional[str]:
+    db_id = workspace_meta.get("commitments_db_id")
+    if not db_id:
+        return None
+
+    properties = {
+        "Commitment": _title_prop(commitment_text),
+        "Deadline": _date_prop(deadline),
+        "Status": _select_prop("Active")
+    }
+    if recipient:
+        properties["Recipient"] = _text_prop(recipient)
+
+    page = await _create_db_page(access_token, db_id, properties)
+    return page.get("url") if page else None
+
+
+async def create_habit_entry(
+    access_token: str,
+    workspace_meta: dict,
+    habit_name: str,
+    date_str: str,
+    streak: int = 1,
+) -> Optional[str]:
+    db_id = workspace_meta.get("habits_db_id")
+    if not db_id:
+        return None
+
+    properties = {
+        "Habit": _title_prop(habit_name),
+        "Date": _date_prop(date_str),
+        "Status": _select_prop("Done"),
+        "Streak": {"number": streak}
+    }
+
+    page = await _create_db_page(access_token, db_id, properties)
+    return page.get("url") if page else None
+
+async def append_template_content(
+    access_token: str,
+    page_id: str,
+    sections: list,
+) -> Optional[str]:
+    """Appends structured JSON sections to an existing page."""
+    children = []
+    for sec in sections:
+        children.append(_heading(sec.get("heading", ""), level=2))
+        for point in sec.get("bullets", []):
+            if isinstance(point, str):
+                children.append(_bullet(point))
+
+    await _append_blocks(access_token, page_id, children)
+    page = await _get_page(access_token, page_id)
+    return page.get("url") if page else None
 
 # ── Notion API Primitives ─────────────────────────────────────────────────────
 

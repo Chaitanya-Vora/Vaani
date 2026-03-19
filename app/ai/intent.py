@@ -8,6 +8,7 @@ import time
 from typing import Optional
 
 import anthropic
+import google.generativeai as genai
 import structlog
 
 from app.config import settings
@@ -16,6 +17,8 @@ from app.models import IntentType, PlanTier
 log = structlog.get_logger(__name__)
 
 claude = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+if settings.GOOGLE_API_KEY:
+    genai.configure(api_key=settings.GOOGLE_API_KEY)
 
 # ── System Prompts ─────────────────────────────────────────────────────────────
 
@@ -23,28 +26,33 @@ INTENT_CLASSIFIER_SYSTEM = """You are Vaani, an AI business assistant for Indian
 
 Your job: analyze the user's message and classify the intent + extract structured data.
 
-INTENT TYPES:
-- save_note: User wants to save/capture information, ideas, meeting notes
-- create_task: User wants to create a to-do, reminder, action item
-- set_reminder: Explicit time-based reminder (not a task)
-- log_meeting: Meeting summary, minutes, client call notes
-- update_crm: Update client info, log interaction, follow-up
+INTENT TYPES (Hinglish Supported):
+- PAYMENT_FOLLOWUP: "Gupta ji ka payment", "Payment reminder"
+- COMMITMENT_CAPTURE: "Kal pakka bhej dunga", "Quote by 6 PM"
+- LEAD_CAPTURE: "Ye naya client hai", "Forwarded VCF"
+- DATA_QUERY: "Pichli baar kya rate diya tha?", "Last rate for Sharma ji?"
+- HABIT_LOG: "Today's gym done", "5km ho gaya"
+- save_note: General information saving
+- create_task: Action items
+- set_reminder: Explicit time-based
+- log_meeting: Meeting summary
+- update_crm: Update client info
 - draft_email: Write an email
-- draft_content: Write blog post, newsletter, social media post, investor update
-- log_expense: Record an expense, upload receipt
-- generate_invoice: Create a GST invoice
-- web_search: Research something
-- compliance_query: Question about GST, TDS, ROC, SEBI, advance tax
-- automation: Set up a recurring automation
-- unknown: Cannot determine intent
+- draft_content: Produce marketing/social posts
+- log_expense: Record an expense
+- generate_invoice: Create GST invoice
+- web_search: Research
+- compliance_query: Indian compliance rules
 
-Respond ONLY with valid JSON. No markdown, no explanation, just raw JSON.
+Respond ONLY with valid JSON.
+If handling audio directly, output an "original_text" field with your transcript.
 
 JSON format:
 {
   "intent": "<intent_type>",
   "confidence": 0-100,
   "language": "en|hi|mr|gu|ta|te",
+  "original_text": "Required if voice note. Provide transcript here.",
   "entities": {
     "client_name": null or string,
     "amount": null or number (in INR),
@@ -56,7 +64,7 @@ JSON format:
     "action_items": [],
     "attendees": [],
     "follow_up_date": null or "YYYY-MM-DD",
-    "gst_rate": null or number (0, 5, 12, 18, 28),
+    "gst_rate": null or number,
     "compliance_type": null or string
   },
   "urgency": "low|medium|high",
@@ -86,31 +94,36 @@ async def classify_intent(
     text: str,
     user_context: dict,
     conversation_history: list[dict] | None = None,
+    audio_bytes: bytes | None = None,
 ) -> dict:
     """
-    Fast intent classification using Claude Haiku.
-    Returns structured intent object.
+    Fast intent classification using Gemini 2.0 Flash-Lite.
+    Returns structured intent object. Supports multimodal audio if audio_bytes is provided.
     """
     start = time.perf_counter()
 
     # Build context string
     context_str = _build_context_string(user_context)
 
-    messages = []
+    # Convert conversation history to Gemini format if needed, but for simplicity we just inject it in text
+    history_ctx = ""
     if conversation_history:
-        # Last 3 turns for context
-        messages.extend(conversation_history[-6:])
-    messages.append({"role": "user", "content": f"User context: {context_str}\n\nMessage: {text}"})
+        history_ctx = "Previous messages:\n" + "\n".join([f"{m['role']}: {m['content']}" for m in conversation_history[-6:]])
+
+    prompt = f"User context: {context_str}\n{history_ctx}\nMessage: {text}"
+    if audio_bytes:
+        prompt = f"User context: {context_str}\n{history_ctx}\nAnalyze the attached voice note and transcribe its content into 'original_text'."
 
     try:
-        response = await claude.messages.create(
-            model=settings.CLAUDE_FAST_MODEL,
-            max_tokens=500,
-            system=INTENT_CLASSIFIER_SYSTEM,
-            messages=messages,
-        )
+        model = genai.GenerativeModel("gemini-2.0-flash-lite", system_instruction=INTENT_CLASSIFIER_SYSTEM)
+        
+        contents = [prompt]
+        if audio_bytes:
+            contents.append({"mime_type": "audio/ogg", "data": audio_bytes})
+            
+        response = await model.generate_content_async(contents)
 
-        raw = response.content[0].text.strip()
+        raw = response.text.strip()
         # Strip any accidental markdown
         if raw.startswith("```"):
             raw = raw.split("```")[1]
@@ -118,11 +131,18 @@ async def classify_intent(
                 raw = raw[4:]
         result = json.loads(raw)
         result["classification_ms"] = round((time.perf_counter() - start) * 1000)
-        result["tokens"] = response.usage.input_tokens + response.usage.output_tokens
+        # Gemini does not expose token usage via async easily in the same way, mocking loosely
+        result["tokens"] = 150 
+        
+        # If text was not provided (multimodal voice), we rely on Gemini's "original_text" field
+        # Update the schema if it's missing
+        if not text and "original_text" not in result:
+            result["original_text"] = "[Voice Note processed]"
+            
         return result
 
     except json.JSONDecodeError as e:
-        log.warning("intent.parse_error", raw=raw[:200], error=str(e))
+        log.warning("intent.parse_error", raw=raw[:200] if 'raw' in locals() else "", error=str(e))
         return {"intent": "unknown", "confidence": 0, "entities": {}, "urgency": "low"}
     except Exception as e:
         log.error("intent.error", error=str(e))

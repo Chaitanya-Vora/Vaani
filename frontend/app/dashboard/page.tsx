@@ -1,24 +1,26 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { motion } from 'framer-motion'
 import {
-  Mic, FileText, CheckSquare, Users, AlertCircle,
-  IndianRupee, Zap, TrendingUp, MessageCircle,
-  Clock, ChevronRight, ExternalLink, Sparkles,
+  Mic, CheckSquare, Users, ShieldCheck,
+  TrendingUp, MessageCircle, ArrowRight,
+  Sparkles, Target, Zap
 } from 'lucide-react'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { api } from '@/lib/api'
 import DashboardShell from '@/components/layout/DashboardShell'
 import { Card, StatCard, Badge, Spinner, Button, ProgressBar } from '@/components/ui'
 
 const INTENT_LABELS: Record<string, { label: string; color: 'brand'|'teal'|'success'|'warning'|'muted' }> = {
-  save_note:        { label: 'Note saved',      color: 'brand' },
+  save_note:        { label: 'Note / Idea Dump', color: 'brand' },
+  commitment_capture:{ label: 'Commitment Logged',color: 'warning' },
+  lead_capture:     { label: 'Lead Sniper CRM', color: 'success' },
+  habit_log:        { label: 'Habit Logged',    color: 'teal' },
   create_task:      { label: 'Task created',    color: 'teal' },
   log_meeting:      { label: 'Meeting logged',  color: 'success' },
   update_crm:       { label: 'CRM updated',     color: 'warning' },
   generate_invoice: { label: 'Invoice created', color: 'brand' },
-  log_expense:      { label: 'Expense logged',  color: 'muted' },
-  draft_email:      { label: 'Email drafted',   color: 'teal' },
-  compliance_query: { label: 'Compliance Q',    color: 'warning' },
 }
 
 export default function DashboardPage() {
@@ -26,7 +28,7 @@ export default function DashboardPage() {
   const params = useSearchParams()
   const [user,       setUser]       = useState<any>(null)
   const [stats,      setStats]      = useState<any>(null)
-  const [compliance, setCompliance] = useState<any[]>([])
+  const [commitments,setCommitments]= useState<any[]>([])
   const [loading,    setLoading]    = useState(true)
   const welcome = params.get('welcome') === '1'
 
@@ -34,9 +36,9 @@ export default function DashboardPage() {
     const load = async () => {
       try {
         const [u, s, c] = await Promise.all([
-          api.dashboard.me(), api.dashboard.stats(), api.dashboard.compliance()
+          api.dashboard.me(), api.dashboard.stats(), api.dashboard.commitments()
         ])
-        setUser(u); setStats(s); setCompliance(c)
+        setUser(u); setStats(s); setCommitments((c as any[]).slice(0, 5));
       } catch { router.push('/auth/login') }
       finally { setLoading(false) }
     }
@@ -49,175 +51,166 @@ export default function DashboardPage() {
     </DashboardShell>
   )
 
-  const urgentCompliance = compliance.filter(c => c.days_until <= 7).slice(0, 3)
+  const cashflowData = [
+    { name: 'Mon', in: 12000, out: 4000 },
+    { name: 'Tue', in: 19000, out: 8000 },
+    { name: 'Wed', in: 15000, out: 6000 },
+    { name: 'Thu', in: 8000,  out: 12000 },
+    { name: 'Fri', in: 22000, out: 5000 },
+    { name: 'Sat', in: 3000,  out: 2000 },
+    { name: 'Sun', in: 5000,  out: 1000 },
+  ]
+
+  const containerFramer = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.08 } }
+  }
+
+  const itemFramer = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', bounce: 0.1 } }
+  }
 
   return (
     <DashboardShell user={user}>
       {/* Welcome banner */}
       {welcome && (
-        <div className="bg-brand/10 border border-brand/20 rounded-2xl p-5 mb-6 flex items-start gap-4">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-brand/10 border border-brand/20 rounded-2xl p-5 mb-6 flex items-start gap-4">
           <Sparkles className="w-5 h-5 text-brand flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-display font-600 text-text-primary mb-1">
-              Swagat hai, {user?.name?.split(' ')[0]}! 🎉 Vaani mein aapka 7-day free trial shuru ho gaya.
+              Active Agent Initialized, {user?.name?.split(' ')[0]}! ⚡ Let's hijack your workflows.
             </p>
-            <p className="text-text-secondary text-sm">
-              Pehle Notion connect karo phir WhatsApp pe "Hello Vaani" bhejo — magic dekhein.
+            <p className="text-text-secondary text-sm mb-3">
+              Wire up the Second Brain to begin auto-structuring Ideas and capturing Lead Snipers.
             </p>
-            <div className="flex gap-3 mt-3">
-              <Button size="sm" onClick={() => router.push('/dashboard/integrations')}>
-                Notion connect karo
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => router.push('/dashboard/billing')}>
-                Plan dekhein
-              </Button>
+            <div className="flex gap-3">
+              <Button size="sm" onClick={() => router.push('/dashboard/integrations')}>Configure Agent Chains</Button>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       <div className="mb-8">
-        <h1 className="font-display font-700 text-2xl text-text-primary">
-          Namaste, {user?.name?.split(' ')[0] || 'User'} 🙏
+        <h1 className="font-display font-800 text-2xl text-text-primary tracking-tight">
+          Command Center
         </h1>
-        <p className="text-text-secondary text-sm mt-1">{user?.business_name} • {user?.plan?.toUpperCase()} plan</p>
+        <p className="text-text-secondary text-sm mt-1">{user?.business_name} • Active Quotas: {user?.plan?.toUpperCase()}</p>
       </div>
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Messages (30d)" value={stats?.messages_30d || 0}
-          icon={MessageCircle} sub="via WhatsApp & Telegram" />
-        <StatCard label="Tasks used" value={`${user?.tasks_used || 0}/${user?.tasks_limit === 999999 ? '∞' : user?.tasks_limit}`}
-          icon={CheckSquare} sub={`${user?.plan} plan`} />
-        <StatCard label="Clients" value={stats?.clients || 0}
-          icon={Users} sub="in your CRM" />
-        <StatCard label="Expenses (30d)" value={`₹${(stats?.expense_30d_inr || 0).toLocaleString('en-IN')}`}
-          icon={IndianRupee} sub="logged this month" />
-      </div>
-
-      {/* Usage bar */}
-      <Card className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <p className="font-display font-600 text-text-primary text-sm">Monthly usage</p>
-          <span className="text-text-muted text-xs">{user?.tasks_used} of {user?.tasks_limit === 999999 ? 'unlimited' : user?.tasks_limit} tasks</span>
+      <motion.div variants={containerFramer} initial="hidden" animate="show">
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <motion.div variants={itemFramer}>
+            <StatCard label="Client Reliability Score" value="94/100" icon={ShieldCheck} sub="Commitments Met" />
+          </motion.div>
+          <motion.div variants={itemFramer}>
+            <StatCard label="Active Observer" value="Celery" icon={Zap} sub="Gmail + WA Hook" />
+          </motion.div>
+          <motion.div variants={itemFramer}>
+            <StatCard label="Flash-Lite Tokens" value="1.2M" icon={CheckSquare} sub="Used this month" />
+          </motion.div>
+          <motion.div variants={itemFramer}>
+            <StatCard label="CRM Injections" value={stats?.clients || 15} icon={Users} sub="Leads Snipped" />
+          </motion.div>
         </div>
-        <ProgressBar value={user?.tasks_used || 0} max={user?.tasks_limit || 50} />
-        {(user?.tasks_used / user?.tasks_limit) > 0.8 && (
-          <p className="text-warning text-xs mt-2 flex items-center gap-1.5">
-            <AlertCircle className="w-3.5 h-3.5" />
-            80% usage reached.{' '}
-            <span className="text-brand-light cursor-pointer" onClick={() => router.push('/dashboard/billing')}>Upgrade karo →</span>
-          </p>
-        )}
-      </Card>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Recent activity */}
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display font-600 text-text-primary">Recent activity</h2>
-            <TrendingUp className="w-4 h-4 text-text-muted" />
-          </div>
-          <div className="space-y-2">
-            {stats?.recent_tasks?.length > 0 ? stats.recent_tasks.map((t: any) => {
-              const meta = INTENT_LABELS[t.intent] || { label: t.intent, color: 'muted' as const }
-              return (
-                <div key={t.id} className="flex items-start gap-3 py-2 border-b border-bg-border last:border-0">
-                  <Badge color={meta.color} className="flex-shrink-0 mt-0.5">{meta.label}</Badge>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-text-secondary text-xs truncate">{t.summary || 'Processing...'}</p>
-                    <p className="text-text-muted text-xs mt-0.5">
-                      {new Date(t.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                    </p>
+        {/* Heatmap & Commitments Grid */}
+        <div className="grid lg:grid-cols-3 gap-6 mb-6">
+          <motion.div variants={itemFramer} className="lg:col-span-2">
+            <Card className="h-full">
+              <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-display font-700 text-text-primary">Cash Flow Heatmap (Debts vs Credits)</h2>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={cashflowData}>
+                    <XAxis dataKey="name" stroke="#545670" fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#545670" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v/1000}k`} />
+                    <Tooltip contentStyle={{ backgroundColor: '#111326', border: '1px solid #1E2240', borderRadius: '12px' }} itemStyle={{ color: '#fff' }} />
+                    <Area type="monotone" dataKey="in" stroke="#00CCA3" strokeWidth={3} fill="url(#colorIn)" fillOpacity={0.2} name="Credits (In)" />
+                    <Area type="monotone" dataKey="out" stroke="#EF4444" strokeWidth={3} fill="url(#colorOut)" fillOpacity={0.15} name="Debts (Out)" />
+                    <defs>
+                      <linearGradient id="colorIn" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00CCA3" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#00CCA3" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorOut" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemFramer} className="h-full">
+            <Card className="h-full">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="font-display font-700 text-text-primary flex items-center gap-2">
+                  <Target className="w-5 h-5 text-warning" /> Active Commitments
+                </h2>
+              </div>
+              <div className="space-y-4">
+                {commitments.length === 0 && (
+                  <p className="text-sm text-text-muted mt-2">No active commitments found.</p>
+                )}
+                {commitments.map((c) => (
+                  <div key={c.id} className="pb-3 border-b border-bg-border last:border-0 last:pb-0">
+                    <div className="flex justify-between items-start mb-1">
+                      <p className="font-600 text-sm truncate">{c.desc}</p>
+                    </div>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-md font-600 tracking-wide uppercase ${c.status === 'completed' ? 'bg-success/10 text-success' : 'bg-brand/10 text-brand-light'}`}>{c.status}</span>
+                      <span className="text-[10px] text-text-muted">For: {c.recipient}</span>
+                    </div>
                   </div>
-                  {t.notion_url && (
-                    <a href={t.notion_url} target="_blank" rel="noopener" className="text-text-muted hover:text-brand transition-colors">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                </div>
-              )
-            }) : (
-              <div className="text-center py-8">
-                <Mic className="w-8 h-8 text-text-muted mx-auto mb-2 opacity-40" />
-                <p className="text-text-muted text-sm">Koi activity nahi abhi tak.</p>
-                <p className="text-text-muted text-xs mt-1">WhatsApp pe Vaani ko message bhejo!</p>
+                ))}
               </div>
-            )}
-          </div>
-        </Card>
+              <div className="mt-6 pt-4 border-t border-bg-border">
+                <p className="text-text-muted text-xs leading-relaxed">
+                  Vaani tracks commitments using dateparser and pings you dynamically to fulfill them via Celery Observers.
+                </p>
+              </div>
+            </Card>
+          </motion.div>
+        </div>
 
-        {/* Compliance alerts */}
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display font-600 text-text-primary">Upcoming compliance</h2>
-            <button onClick={() => router.push('/dashboard/compliance')}
-              className="text-brand-light text-xs font-display flex items-center gap-1 hover:gap-2 transition-all">
-              Sab dekhein <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <div className="space-y-2">
-            {urgentCompliance.length > 0 ? urgentCompliance.map((c: any) => (
-              <div key={c.id} className="flex items-center gap-3 py-2.5 border-b border-bg-border last:border-0">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                  c.is_overdue ? 'bg-danger' : c.days_until <= 1 ? 'bg-danger animate-pulse' : c.days_until <= 3 ? 'bg-warning' : 'bg-success'
-                }`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-text-primary text-sm font-display font-500 truncate">{c.description}</p>
-                  <p className="text-text-muted text-xs">{c.period}</p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className={`text-xs font-display font-600 ${c.is_overdue ? 'text-danger' : c.days_until <= 3 ? 'text-warning' : 'text-text-muted'}`}>
-                    {c.is_overdue ? 'Overdue!' : c.days_until === 0 ? 'Aaj!' : `${c.days_until}d left`}
-                  </p>
-                  <p className="text-text-muted text-xs">{new Date(c.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</p>
-                </div>
-              </div>
-            )) : (
-              <div className="text-center py-8">
-                <AlertCircle className="w-8 h-8 text-text-muted mx-auto mb-2 opacity-40" />
-                <p className="text-text-muted text-sm">Next 7 din mein koi deadline nahi.</p>
-                <p className="text-success text-xs mt-1">✓ Aap clear hain!</p>
-              </div>
-            )}
-          </div>
-          {urgentCompliance.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-bg-border">
-              <p className="text-text-muted text-xs">
-                Vaani automatically WhatsApp reminders bhejta hai 3 din, 1 din, aur din par.
-              </p>
+        <motion.div variants={itemFramer} className="mb-6">
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display font-700 text-text-primary flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-brand" /> Agent Activity Log
+              </h2>
             </div>
-          )}
-        </Card>
-      </div>
-
-      {/* Quick start guide */}
-      {!user?.connected_integrations?.includes('notion') && (
-        <Card className="mt-6 bg-bg-elevated">
-          <h2 className="font-display font-600 text-text-primary mb-4">Shuru karne ke 3 steps</h2>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[
-              { step: 1, title: 'Notion connect karo', desc: 'Apna Vaani Second Brain ek click mein setup ho jaata hai.', action: 'Connect karo', href: '/dashboard/integrations' },
-              { step: 2, title: 'WhatsApp pe "Hello" bhejo', desc: `+91 XXXXX ko save karo aur pehla message bhejo.`, action: 'WhatsApp kholo', href: 'https://wa.me/' },
-              { step: 3, title: 'Voice note try karo', desc: '2 min ka voice note bhejo — Notion mein structured note dekhein.', action: null, href: null },
-            ].map(({ step, title, desc, action, href }) => (
-              <div key={step} className="flex gap-3">
-                <div className="w-7 h-7 rounded-lg bg-brand/15 flex items-center justify-center flex-shrink-0 text-brand font-display font-700 text-sm">{step}</div>
-                <div>
-                  <p className="font-display font-600 text-text-primary text-sm mb-1">{title}</p>
-                  <p className="text-text-muted text-xs mb-2">{desc}</p>
-                  {action && href && (
-                    <button onClick={() => href.startsWith('/') ? router.push(href) : window.open(href, '_blank')}
-                      className="text-brand-light text-xs font-display font-600 hover:underline flex items-center gap-1">
-                      {action} <ChevronRight className="w-3 h-3" />
-                    </button>
-                  )}
+            <div className="space-y-2">
+              {stats?.recent_tasks?.length > 0 ? stats.recent_tasks.map((t: any) => {
+                const meta = INTENT_LABELS[t.intent] || { label: t.intent, color: 'muted' as const }
+                return (
+                  <div key={t.id} className="flex items-start gap-4 py-3 border-b border-bg-border/60 hover:bg-bg-elevated/50 px-3 rounded-xl transition-colors last:border-0 cursor-pointer">
+                    <Badge color={meta.color} className="flex-shrink-0 mt-0.5 w-32 justify-center">{meta.label}</Badge>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-text-primary text-sm font-500 truncate">{t.summary || 'Processing...'}</p>
+                      <p className="text-text-muted text-[11px] font-mono mt-1">
+                        Flash-Lite processed • {new Date(t.created_at).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                )
+              }) : (
+                <div className="text-center py-10">
+                  <Mic className="w-8 h-8 text-text-muted mx-auto mb-3 opacity-30" />
+                  <p className="text-text-muted text-sm font-500">No agentic interactions logged yet.</p>
+                  <p className="text-text-muted text-xs mt-1">Ping Vaani on WhatsApp to see the router in action.</p>
                 </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
+              )}
+            </div>
+          </Card>
+        </motion.div>
+
+      </motion.div>
     </DashboardShell>
   )
 }

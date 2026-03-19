@@ -18,7 +18,7 @@ from app.models import (
     User, Message, AITask, Subscription,
     MessageChannel, MessageType, IntentType, TaskStatus, PlanTier
 )
-from app.ai.transcription import transcribe_audio
+from app.ai.transcription import transcribe_audio, _download_audio
 from app.ai.intent import classify_intent, generate_response
 from app.ai.executor import execute_intent
 from app.bot.whatsapp import send_text_message as wa_send, mark_message_read
@@ -94,11 +94,12 @@ async def _process_message(
     # ── 3. Resolve text content ───────────────────────────────────────────────
     text_content = parsed.get("text", "")
     audio_url = None
+    audio_bytes = None
     msg_type = MessageType.TEXT
 
     if parsed.get("type") in ("voice", "audio"):
         msg_type = MessageType.VOICE
-        await send_fn("🎙️ _Transcribing your voice note..._")
+        await send_fn("🎙️ _Listening and processing with Gemini Flash-Lite..._")
 
         # Resolve media URL (WA gives media_id, Telegram gives file_id)
         if channel == MessageChannel.WHATSAPP and parsed.get("audio_url"):
@@ -107,14 +108,9 @@ async def _process_message(
             audio_url = await get_telegram_file_url(parsed["media_file_id"])
 
         if audio_url:
-            transcription = await transcribe_audio(
-                audio_url=audio_url,
-                language_hint=user.language_pref if user.language_pref != "en" else None,
-                user_id=str(user.id),
-            )
-            text_content = transcription.get("text", "")
-            if not text_content:
-                await send_fn("⚠️ Couldn't transcribe that voice note. Try sending text.")
+            audio_bytes = await _download_audio(audio_url)
+            if not audio_bytes:
+                await send_fn("⚠️ Couldn't download that voice note. Try sending text.")
                 return
 
     elif parsed.get("type") == "image":
@@ -125,7 +121,7 @@ async def _process_message(
         msg_type = MessageType.DOCUMENT
         text_content = f"[Document: {parsed.get('filename', 'file')}]"
 
-    if not text_content.strip():
+    if not text_content.strip() and not audio_bytes:
         return
 
     # ── 4. Save raw message to DB ─────────────────────────────────────────────
@@ -134,7 +130,7 @@ async def _process_message(
         channel=channel,
         message_type=msg_type,
         raw_content=parsed.get("text", ""),
-        transcribed_content=text_content if msg_type == MessageType.VOICE else None,
+        transcribed_content=None,  # Updated after classification if voice
         media_url=audio_url,
         channel_message_id=parsed.get("message_id"),
     )
@@ -145,12 +141,20 @@ async def _process_message(
     user_context = await _build_user_context(user, db)
     conversation_history = await _get_conversation_history(user.id)
 
-    # ── 6. Classify intent ────────────────────────────────────────────────────
+    # ── 6. Classify intent via Gemini Flash-Lite ──────────────────────────────
     intent_data = await classify_intent(
         text=text_content,
         user_context=user_context,
         conversation_history=conversation_history,
+        audio_bytes=audio_bytes,
     )
+    
+    # If audio was provided, update the message with transcribed content directly from Gemini
+    if audio_bytes and intent_data.get("original_text"):
+        db_message.transcribed_content = intent_data["original_text"]
+        text_content = intent_data["original_text"]
+        await db.flush()
+
     intent_data["original_text"] = text_content
 
     log.info(

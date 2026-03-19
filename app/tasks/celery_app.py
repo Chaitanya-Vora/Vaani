@@ -15,6 +15,7 @@ celery_app = Celery(
         "app.tasks.reminder_tasks",
         "app.tasks.automation_tasks",
         "app.tasks.billing_tasks",
+        "app.tasks.celery_tasks",
     ],
 )
 
@@ -40,6 +41,11 @@ celery_app.conf.update(
         "personal-reminders-poll": {
             "task": "app.tasks.reminder_tasks.send_pending_personal_reminders",
             "schedule": crontab(minute="*/5"),
+        },
+        # Daily Debtor Watcher - runs exactly at 9:00 AM
+        "debtor-watcher-daily": {
+            "task": "app.tasks.celery_tasks.debtor_watcher",
+            "schedule": crontab(hour=9, minute=0),
         },
         # Reset monthly usage counters at midnight on 1st of each month
         "reset-monthly-usage": {

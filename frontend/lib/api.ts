@@ -29,6 +29,7 @@ export const api = {
     me:         () => req('/api/dashboard/me'),
     stats:      () => req('/api/dashboard/stats'),
     compliance: () => req('/api/dashboard/compliance'),
+    commitments:() => req('/api/dashboard/commitments'),
     clients:    () => req('/api/dashboard/clients'),
     update:     (body: object) => req('/api/dashboard/me', { method: 'PATCH', body: JSON.stringify(body) }),
   },

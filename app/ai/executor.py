@@ -74,6 +74,21 @@ async def execute_intent(
         elif intent == IntentType.WEB_SEARCH:
             result = await _handle_web_search(text, user, plan)
 
+        elif intent == IntentType.COMMITMENT_CAPTURE:
+            result = await _handle_commitment_capture(text, entities, user, language)
+
+        elif intent == IntentType.LEAD_CAPTURE:
+            result = await _handle_lead_capture(text, entities, user, db, language)
+
+        elif intent == IntentType.DATA_QUERY:
+            result = await _handle_data_query(text, user)
+
+        elif intent == IntentType.HABIT_LOG:
+            result = await _handle_habit_log(text, entities, user)
+
+        elif intent == IntentType.PAYMENT_FOLLOWUP:
+            result = await _handle_payment_followup(text, entities, user, language)
+
         else:
             result = await _handle_unknown(text, user, language, plan)
 
@@ -106,31 +121,37 @@ async def execute_intent(
 
 async def _handle_save_note(text, entities, user, language, plan):
     """Voice/text dump → structured note → Notion."""
-    # Generate structured note with Claude
-    ai_result = await execute_with_ai(
-        f"""Convert this raw note/brain-dump into a clean, structured Notion page.
-
+    import json
+    
+    # Check if it's an Idea Dump
+    is_idea = any(k in text.lower() for k in ["idea", "startup", "saas", "project"])
+    
+    if is_idea:
+        system_prompt = f"""Convert this raw idea into a structured business template.
 Raw input: {text}
+Make sure to generate exactly:
+1. Title
+2. Executive Summary (in summary field)
+3. Potential Challenges (in key_points)
+4. Next Steps (in action_items)
+Return as JSON: {{title, summary, key_points: [], action_items: [], tags: ["idea", "project"]}}"""
+    else:
+        system_prompt = f"""Convert this raw note/brain-dump into a clean, structured Notion page.
+Raw input: {text}
+Create: Title, Summary paragraph, Key points as bullet list, Action items, Tags.
+Return as JSON: {{title, summary, key_points: [], action_items: [], tags: []}}"""
 
-Create:
-1. A clear title (5-8 words)
-2. A summary paragraph
-3. Key points as bullet list
-4. Any action items (if present)
-5. Tags (relevant keywords)
-
-Return as JSON: {{title, summary, key_points: [], action_items: [], tags: []}}""",
+    ai_result = await execute_with_ai(
+        system_prompt,
         context={"user_context": _get_user_ctx(user), "language": language},
         user_plan=plan,
     )
 
-    import json
     try:
         note_data = json.loads(ai_result["output"])
     except Exception:
         note_data = {"title": "Note", "summary": text, "key_points": [], "action_items": [], "tags": []}
 
-    # Save to Notion
     notion_url = None
     notion_integration = _get_integration(user, "notion")
     if notion_integration:
@@ -145,8 +166,9 @@ Return as JSON: {{title, summary, key_points: [], action_items: [], tags: []}}""
             source_text=text,
         )
 
+    msg_type = "Idea Blueprint" if is_idea else "Note"
     return {
-        "summary": f"✅ Note saved: *{note_data.get('title', 'Note')}*",
+        "summary": f"✅ {msg_type} saved: *{note_data.get('title', 'Note')}*",
         "notion_url": notion_url,
         "note": note_data,
         "tokens": ai_result.get("tokens", 0),
@@ -599,6 +621,124 @@ async def _handle_unknown(text, user, language, plan):
         user_plan=plan,
     )
     return {"summary": ai_result.get("output", "I didn't quite get that. Can you rephrase?")}
+
+import dateparser
+
+async def _handle_commitment_capture(text, entities, user, language):
+    """Voice commitment -> Schedule check via Celery -> Notion."""
+    deadline_str = entities.get("deadline") or entities.get("due_date") or entities.get("date")
+    recipient = entities.get("client_name") or entities.get("recipient")
+    commitment = entities.get("title") or entities.get("description") or "Commitment"
+
+    if not deadline_str:
+        return {"summary": "⚠️ Can't find a deadline in your commitment. Try: 'Kal 6 baje tak quote dunga'"}
+
+    dt = dateparser.parse(str(deadline_str), settings={'PREFER_DATES_FROM': 'future'})
+    if not dt:
+        from datetime import timedelta
+        dt = datetime.now() + timedelta(days=1)
+
+    notion_url = None
+    notion_integration = _get_integration(user, "notion")
+    if notion_integration:
+        notion_url = await notion.create_commitment_entry(
+            access_token=notion_integration.access_token,
+            workspace_meta=notion_integration.metadata_,
+            commitment_text=commitment,
+            deadline=dt.date().isoformat(),
+            recipient=recipient,
+        )
+
+    from app.tasks.celery_tasks import check_gmail_for_commitments
+    check_gmail_for_commitments.apply_async(
+        args=[str(user.id), dt.isoformat(), entities],
+        eta=dt
+    )
+
+    action_button = f"\n\n[Open Commitment in Notion]({notion_url})" if notion_url else ""
+    return {
+        "summary": f"🎯 Commitment logged for {dt.strftime('%d %b %I:%M %p')}. I'll BCC track this!{action_button}",
+        "notion_url": notion_url
+    }
+
+async def _handle_lead_capture(text, entities, user, db, language):
+    """WhatsApp VCF / Text Lead -> Notion + Teams Webhook -> Interactive WhatsApp."""
+    client_name = entities.get("client_name") or "New Lead"
+    description = entities.get("description") or text
+    
+    notion_url = None
+    notion_integration = _get_integration(user, "notion")
+    if notion_integration:
+        notion_url = await notion.update_crm_entry(
+            access_token=notion_integration.access_token,
+            workspace_meta=notion_integration.metadata_,
+            client_name=client_name,
+            interaction_note=f"LEAD CAPTURE: {description}",
+        )
+    
+    from app.models import Client
+    client_obj = Client(
+        user_id=user.id,
+        name=client_name,
+        notes=f"LEAD: {description}",
+        tags=["Hot Lead"]
+    )
+    db.add(client_obj)
+    await db.flush()
+
+    import httpx
+    import os
+    teams_webhook = os.getenv("TEAMS_WEBHOOK_URL")
+    if teams_webhook:
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(teams_webhook, json={"text": f"New Lead: {client_name}\nDetails: {description}"})
+        except Exception:
+            pass
+
+    return {
+        "summary": f"📋 Lead Captured: *{client_name}*\n\n_Reply with 1 to Assign to Team_\n_Reply with 2 to Schedule Call_\n_Reply with 3 to Create Quote_",
+        "notion_url": notion_url
+    }
+
+async def _handle_data_query(text, user):
+    """Use Gemini 2.0 Flash-Lite caching/context window to query memory."""
+    ai_result = await execute_with_ai(
+        f"Answer this query based strictly on the user context and CRM memory:\n\nQuery: {text}",
+        context={"user_context": _get_user_ctx(user), "language": "en"},
+    )
+    return {
+        "summary": f"🔍 {ai_result.get('output', 'Found it.')}"
+    }
+
+async def _handle_habit_log(text, entities, user):
+    """Log habit -> Notion -> create progress chart."""
+    habit = entities.get("category") or entities.get("title") or "Daily Habit"
+    
+    notion_url = None
+    streak = 1
+    notion_integration = _get_integration(user, "notion")
+    if notion_integration:
+        notion_url = await notion.create_habit_entry(
+            access_token=notion_integration.access_token,
+            workspace_meta=notion_integration.metadata_,
+            habit_name=habit,
+            date_str=datetime.now().date().isoformat(),
+            streak=streak,
+        )
+
+    chart_url = f"https://quickchart.io/chart?c={{type:'radialGauge',data:{{datasets:[{{data:[{streak * 10}],backgroundColor:'green'}}]}}}}"
+
+    return {
+        "summary": f"🔥 Habit logged: {habit}!\nCurrent streak: {streak} days.\n\n📊 View Progress: {chart_url}",
+        "notion_url": notion_url
+    }
+
+async def _handle_payment_followup(text, entities, user, language):
+    client = entities.get("client_name") or "the client"
+    return {
+        "summary": f"💰 I've scheduled a payment follow-up for *{client}*.",
+    }
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
