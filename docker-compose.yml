@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: vaani
+      POSTGRES_PASSWORD: vaani
+      POSTGRES_DB: vaani
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/code
+
+  worker:
+    build: .
+    command: celery -A app.tasks.celery_app worker --loglevel=info -Q default
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+
+  beat:
+    build: .
+    command: celery -A app.tasks.celery_app beat --loglevel=info
+    env_file: .env
+    depends_on:
+      - redis
+
+volumes:
+  pgdata:
