@@ -55,6 +55,10 @@ JSON format:
   "original_text": "Required if voice note. Provide transcript here.",
   "entities": {
     "client_name": null or string,
+    "email": null or string,
+    "phone": null or string,
+    "company": null or string,
+    "role": null or string,
     "amount": null or number (in INR),
     "date": null or "YYYY-MM-DD",
     "due_date": null or "YYYY-MM-DD",
@@ -94,11 +98,12 @@ async def classify_intent(
     text: str,
     user_context: dict,
     conversation_history: list[dict] | None = None,
-    audio_bytes: bytes | None = None,
+    media_bytes: bytes | None = None,
+    media_type: str | None = None,
 ) -> dict:
     """
     Fast intent classification using Gemini 2.0 Flash-Lite.
-    Returns structured intent object. Supports multimodal audio if audio_bytes is provided.
+    Returns structured intent object. Supports multimodal audio/images if media_bytes is provided.
     """
     start = time.perf_counter()
 
@@ -111,15 +116,18 @@ async def classify_intent(
         history_ctx = "Previous messages:\n" + "\n".join([f"{m['role']}: {m['content']}" for m in conversation_history[-6:]])
 
     prompt = f"User context: {context_str}\n{history_ctx}\nMessage: {text}"
-    if audio_bytes:
-        prompt = f"User context: {context_str}\n{history_ctx}\nAnalyze the attached voice note and transcribe its content into 'original_text'."
+    if media_bytes and media_type:
+        if "audio" in media_type:
+            prompt = f"User context: {context_str}\n{history_ctx}\nAnalyze the attached voice note and transcribe its content into 'original_text'."
+        elif "image" in media_type:
+            prompt = f"User context: {context_str}\n{history_ctx}\nAnalyze the attached image. If it's a business card, extract Name, Company, Phone, Email, Role and classify as LEAD_CAPTURE. If it's an invoice/receipt, extract amounts/vendor and set intent to LOG_EXPENSE. Provide a concise 'original_text' describing what was found. Original user text: {text}"
 
     try:
         model = genai.GenerativeModel("gemini-2.0-flash-lite", system_instruction=INTENT_CLASSIFIER_SYSTEM)
         
         contents = [prompt]
-        if audio_bytes:
-            contents.append({"mime_type": "audio/ogg", "data": audio_bytes})
+        if media_bytes and media_type:
+            contents.append({"mime_type": media_type, "data": media_bytes})
             
         response = await model.generate_content_async(contents)
 

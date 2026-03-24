@@ -4,9 +4,9 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { clsx } from 'clsx'
 import {
-  LayoutDashboard, AlertCircle, Users, Zap, Plug, CreditCard,
-  LogOut, Menu, X, MessageCircle, Bell, ChevronRight,
-  Mic, FileText, Settings, Target,
+  LayoutDashboard, Users, Zap, Plug, CreditCard,
+  LogOut, Menu, X, MessageCircle, ChevronRight,
+  Target, Zap as ZapIcon, LayoutPanelLeft
 } from 'lucide-react'
 import { clearToken } from '@/lib/api'
 
@@ -28,35 +28,34 @@ export default function DashboardLayout({ children, user }: { children: React.Re
 
   const Sidebar = ({ mobile = false }) => (
     <aside className={clsx(
-      'flex flex-col bg-bg-surface border-r border-bg-border h-full',
+      'flex flex-col bg-[#fafafa] border-r border-zinc-200 h-full',
       mobile ? 'w-full' : 'w-64 min-h-screen',
     )}>
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-bg-border flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
-            <Mic className="w-4 h-4 text-white" />
+      <div className="px-6 py-5 border-b border-zinc-200 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-[10px] bg-zinc-900 flex items-center justify-center shadow-sm">
+            <ZapIcon className="w-4 h-4 text-white" />
           </div>
-          <span className="font-display font-700 text-text-primary text-lg">Vaani</span>
+          <span className="font-display font-700 text-zinc-900 text-lg tracking-tight">Vaani OS</span>
         </Link>
-        {mobile && <button onClick={() => setOpen(false)}><X className="w-5 h-5 text-text-muted" /></button>}
+        {mobile && <button onClick={() => setOpen(false)}><X className="w-5 h-5 text-zinc-400" /></button>}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV.map(({ href, icon: Icon, label }) => {
           const active = path === href || (href !== '/dashboard' && path.startsWith(href))
           return (
             <Link key={href} href={href} onClick={() => setOpen(false)}
               className={clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-display font-500 transition-all duration-150',
+                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150',
                 active
-                  ? 'bg-brand/10 text-brand-light border border-brand/20'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated',
+                  ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/60'
+                  : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100/50',
               )}>
-              <Icon className="w-4 h-4 flex-shrink-0" />
+              <Icon className={clsx("w-4 h-4 flex-shrink-0", active ? "text-zinc-900" : "")} />
               {label}
-              {active && <ChevronRight className="w-3.5 h-3.5 ml-auto text-brand" />}
             </Link>
           )
         })}
@@ -64,32 +63,34 @@ export default function DashboardLayout({ children, user }: { children: React.Re
 
       {/* Usage bar */}
       {user && (
-        <div className="px-4 py-3 mx-3 mb-3 bg-bg-elevated rounded-xl border border-bg-border">
+        <div className="px-4 py-3 mx-3 mb-3 bg-white rounded-xl border border-zinc-200 shadow-sm">
           <div className="flex justify-between items-center mb-1.5">
-            <span className="text-text-muted text-xs font-display">Tasks used</span>
-            <span className="text-text-secondary text-xs font-mono">{user.tasks_used}/{user.tasks_limit === 999999 ? '∞' : user.tasks_limit}</span>
+            <span className="text-zinc-500 text-xs font-semibold">Tasks used</span>
+            <span className="text-zinc-900 text-xs font-bold">{user.tasks_used}/{user.tasks_limit === 999999 ? '∞' : user.tasks_limit}</span>
           </div>
-          <div className="w-full bg-bg-border rounded-full h-1.5">
-            <div className={clsx('h-1.5 rounded-full transition-all', user.tasks_used / user.tasks_limit > 0.9 ? 'bg-danger' : 'bg-brand')}
+          <div className="w-full bg-zinc-100 rounded-full h-1.5">
+            <div className={clsx('h-1.5 rounded-full transition-all', user.tasks_used / user.tasks_limit > 0.9 ? 'bg-red-500' : 'bg-zinc-900')}
               style={{ width: `${Math.min(100, (user.tasks_used / (user.tasks_limit || 50)) * 100)}%` }} />
           </div>
-          <p className="text-text-muted text-xs mt-1.5 capitalize">{user.plan} plan</p>
+          <p className="text-zinc-500 text-xs mt-1.5 font-medium capitalize">{user.plan} plan</p>
         </div>
       )}
 
       {/* User + logout */}
-      <div className="px-3 pb-4 border-t border-bg-border pt-3">
-        <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-bg-elevated transition-all cursor-pointer">
-          <div className="w-8 h-8 rounded-lg bg-brand/20 flex items-center justify-center flex-shrink-0">
-            <span className="text-brand font-display font-700 text-sm">
-              {user?.name?.[0]?.toUpperCase() || 'V'}
-            </span>
+      <div className="px-3 pb-4 border-t border-zinc-200 pt-3">
+        <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 transition-all cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-zinc-200 flex items-center justify-center flex-shrink-0">
+              <span className="text-zinc-900 font-bold text-sm">
+                {user?.name?.[0]?.toUpperCase() || 'V'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-zinc-900 text-xs font-bold truncate">{user?.name || 'User'}</p>
+              <p className="text-zinc-500 text-[11px] font-medium truncate">{user?.business_name || 'Business'}</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-text-primary text-xs font-display font-600 truncate">{user?.name || 'User'}</p>
-            <p className="text-text-muted text-xs truncate">{user?.business_name || ''}</p>
-          </div>
-          <button onClick={logout} className="text-text-muted hover:text-danger transition-colors">
+          <button onClick={logout} className="text-zinc-400 hover:text-red-500 transition-colors">
             <LogOut className="w-4 h-4" />
           </button>
         </div>
@@ -98,14 +99,14 @@ export default function DashboardLayout({ children, user }: { children: React.Re
   )
 
   return (
-    <div className="flex min-h-screen bg-bg-base">
+    <div className="flex min-h-screen bg-white font-body selection:bg-zinc-900 selection:text-white">
       {/* Desktop sidebar */}
       <div className="hidden lg:block"><Sidebar /></div>
 
       {/* Mobile overlay */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className="absolute left-0 top-0 bottom-0 w-72 z-10"><Sidebar mobile /></div>
         </div>
       )}
@@ -113,21 +114,24 @@ export default function DashboardLayout({ children, user }: { children: React.Re
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-14 border-b border-bg-border bg-bg-surface/80 backdrop-blur-md flex items-center px-4 gap-4 sticky top-0 z-40">
-          <button onClick={() => setOpen(true)} className="lg:hidden text-text-secondary">
+        <header className="h-16 border-b border-zinc-100 bg-[#fafafa]/80 backdrop-blur-md flex items-center px-6 gap-4 sticky top-0 z-40">
+          <button onClick={() => setOpen(true)} className="lg:hidden text-zinc-500">
             <Menu className="w-5 h-5" />
           </button>
-          <div className="flex-1" />
+          <div className="flex-1 flex items-center text-sm font-semibold text-zinc-400">
+            <LayoutPanelLeft className="w-4 h-4 mr-2" /> 
+            Command Center
+          </div>
           <div className="flex items-center gap-2">
             <a href="https://wa.me/" target="_blank" rel="noopener"
-              className="flex items-center gap-2 text-xs text-text-secondary hover:text-teal transition-colors border border-bg-border hover:border-teal/40 rounded-lg px-3 py-1.5">
-              <MessageCircle className="w-3.5 h-3.5 text-teal" />
+              className="flex items-center gap-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 transition-colors bg-white border border-zinc-200 shadow-sm rounded-full px-4 py-2 hover:shadow-md">
+              <MessageCircle className="w-4 h-4 text-green-500" />
               Open WhatsApp
             </a>
           </div>
         </header>
 
-        <main className="flex-1 p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-6 lg:p-10 bg-white">{children}</main>
       </div>
     </div>
   )

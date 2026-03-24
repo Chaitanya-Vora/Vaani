@@ -84,7 +84,7 @@ async def execute_intent(
             result = await _handle_data_query(text, user)
 
         elif intent == IntentType.HABIT_LOG:
-            result = await _handle_habit_log(text, entities, user)
+            result = await _handle_habit_log(text, entities, user, db)
 
         elif intent == IntentType.PAYMENT_FOLLOWUP:
             result = await _handle_payment_followup(text, entities, user, language)
@@ -665,6 +665,19 @@ async def _handle_lead_capture(text, entities, user, db, language):
     """WhatsApp VCF / Text Lead -> Notion + Teams Webhook -> Interactive WhatsApp."""
     client_name = entities.get("client_name") or "New Lead"
     description = entities.get("description") or text
+    email = entities.get("email")
+    phone = entities.get("phone")
+    company = entities.get("company")
+    role = entities.get("role")
+
+    details = []
+    if company: details.append(f"Company: {company}")
+    if role: details.append(f"Role: {role}")
+    if email: details.append(f"Email: {email}")
+    if phone: details.append(f"Phone: {phone}")
+    if description and not description.startswith("[Image]"): details.append(f"Notes: {description}")
+    
+    full_note = "LEAD CAPTURE:\n" + "\n".join(details)
     
     notion_url = None
     notion_integration = _get_integration(user, "notion")
@@ -673,7 +686,7 @@ async def _handle_lead_capture(text, entities, user, db, language):
             access_token=notion_integration.access_token,
             workspace_meta=notion_integration.metadata_,
             client_name=client_name,
-            interaction_note=f"LEAD CAPTURE: {description}",
+            interaction_note=full_note,
         )
     
     from app.models import Client
@@ -711,33 +724,149 @@ async def _handle_data_query(text, user):
         "summary": f"🔍 {ai_result.get('output', 'Found it.')}"
     }
 
-async def _handle_habit_log(text, entities, user):
-    """Log habit -> Notion -> create progress chart."""
+async def _handle_habit_log(text, entities, user, db):
+    """
+    Log a habit and compute real streak from Notion habit DB.
+    Falls back to streak=1 gracefully if Notion isn't connected yet.
+    """
     habit = entities.get("category") or entities.get("title") or "Daily Habit"
-    
-    notion_url = None
+    today_str = datetime.now().date().isoformat()
+
+    # ── Compute real streak from Notion ──────────────────────────────────────
     streak = 1
     notion_integration = _get_integration(user, "notion")
+
+    if notion_integration:
+        try:
+            # Query Notion for recent habit entries (last 30 days)
+            import httpx
+            db_id = notion_integration.metadata_.get("habits_db_id")
+            if db_id:
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    resp = await client.post(
+                        f"https://api.notion.com/v1/databases/{db_id}/query",
+                        headers={
+                            "Authorization": f"Bearer {notion_integration.access_token}",
+                            "Notion-Version": "2022-06-28",
+                            "Content-Type": "application/json",
+                        },
+                        json={
+                            "filter": {
+                                "property": "Habit",
+                                "title": {"equals": habit}
+                            },
+                            "sorts": [{"property": "Date", "direction": "descending"}],
+                            "page_size": 30,
+                        }
+                    )
+                    if resp.status_code == 200:
+                        pages = resp.json().get("results", [])
+                        # Compute consecutive day streak
+                        from datetime import datetime as dt, timedelta
+                        today = dt.now().date()
+                        streak = 0
+                        for i, page in enumerate(pages):
+                            date_prop = page.get("properties", {}).get("Date", {})
+                            date_val = date_prop.get("date", {})
+                            if not date_val or not date_val.get("start"):
+                                continue
+                            entry_date = dt.fromisoformat(date_val["start"]).date()
+                            expected_date = today - timedelta(days=i)
+                            if entry_date == expected_date:
+                                streak += 1
+                            else:
+                                break
+                        streak = max(streak, 1)  # today counts
+        except Exception as e:
+            log.warning("habit.streak_compute_failed", error=str(e))
+            streak = 1
+
+    # ── Save today's entry to Notion ─────────────────────────────────────────
+    notion_url = None
     if notion_integration:
         notion_url = await notion.create_habit_entry(
             access_token=notion_integration.access_token,
             workspace_meta=notion_integration.metadata_,
             habit_name=habit,
-            date_str=datetime.now().date().isoformat(),
+            date_str=today_str,
             streak=streak,
         )
 
-    chart_url = f"https://quickchart.io/chart?c={{type:'radialGauge',data:{{datasets:[{{data:[{streak * 10}],backgroundColor:'green'}}]}}}}"
+    # ── Streak milestone messages ─────────────────────────────────────────────
+    if streak >= 30:
+        milestone = f"🏆 30-day streak! Legendary."
+    elif streak >= 14:
+        milestone = f"🔥 2-week streak! Keep going."
+    elif streak >= 7:
+        milestone = f"⚡ Week streak! Solid."
+    else:
+        milestone = f"Keep it up!"
 
     return {
-        "summary": f"🔥 Habit logged: {habit}!\nCurrent streak: {streak} days.\n\n📊 View Progress: {chart_url}",
-        "notion_url": notion_url
+        "summary": (
+            f"✅ *{habit}* logged for today!\n"
+            f"🔥 Current streak: *{streak} days*\n"
+            f"{milestone}"
+        ),
+        "notion_url": notion_url,
+        "streak": streak,
     }
 
 async def _handle_payment_followup(text, entities, user, language):
-    client = entities.get("client_name") or "the client"
+    """
+    Logs overdue invoice in Notion + schedules a WhatsApp nudge.
+    V1: nudges the *user* with a pre-drafted message they can forward.
+    V2 (Growth+): sends directly to client if their number is in CRM.
+    """
+    from sqlalchemy import select
+    from app.models import Client, Invoice
+
+    client_name = entities.get("client_name") or "the client"
+    amount = entities.get("amount")
+    due_date = entities.get("due_date") or entities.get("date")
+
+    # Build a ready-to-forward WhatsApp message the user can paste
+    amount_str = f"₹{int(amount):,}" if amount else "the outstanding amount"
+    due_str = f" (due {due_date})" if due_date else ""
+
+    draft_message = (
+        f"Dear {client_name},\n\n"
+        f"This is a gentle reminder regarding {amount_str}{due_str}. "
+        f"Kindly arrange the payment at your earliest convenience.\n\n"
+        f"Please ignore if already paid.\n\nRegards,\n{getattr(user, 'business_name', 'Us')}"
+    )
+
+    # Save to Notion CRM as an interaction note
+    notion_url = None
+    notion_integration = _get_integration(user, "notion")
+    if notion_integration:
+        notion_url = await notion.update_crm_entry(
+            access_token=notion_integration.access_token,
+            workspace_meta=notion_integration.metadata_,
+            client_name=client_name,
+            interaction_note=f"PAYMENT FOLLOWUP SENT: {amount_str}{due_str}",
+            follow_up_date=None,
+        )
+
+    # Schedule a 3-day re-nudge if not paid
+    from app.tasks.reminder_tasks import schedule_reminder
+    from datetime import datetime, timedelta
+    remind_at = (datetime.now() + timedelta(days=3)).date().isoformat()
+    schedule_reminder.delay(
+        user_id=str(user.id),
+        message=f"Did {client_name} pay {amount_str}? Send another reminder if not.",
+        remind_at=remind_at,
+        channel="whatsapp",
+    )
+
     return {
-        "summary": f"💰 I've scheduled a payment follow-up for *{client}*.",
+        "summary": (
+            f"💰 Payment followup ready for *{client_name}*.\n\n"
+            f"📋 Copy & send:\n_{draft_message}_\n\n"
+            f"⏰ I'll remind you again in 3 days if unpaid."
+        ),
+        "notion_url": notion_url,
+        "draft_message": draft_message,
     }
 
 

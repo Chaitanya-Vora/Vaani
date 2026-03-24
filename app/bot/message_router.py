@@ -93,8 +93,9 @@ async def _process_message(
 
     # ── 3. Resolve text content ───────────────────────────────────────────────
     text_content = parsed.get("text", "")
-    audio_url = None
-    audio_bytes = None
+    media_url = None
+    media_bytes = None
+    media_type = None
     msg_type = MessageType.TEXT
 
     if parsed.get("type") in ("voice", "audio"):
@@ -103,25 +104,37 @@ async def _process_message(
 
         # Resolve media URL (WA gives media_id, Telegram gives file_id)
         if channel == MessageChannel.WHATSAPP and parsed.get("audio_url"):
-            audio_url = parsed["audio_url"]
+            media_url = parsed["audio_url"]
         elif channel == MessageChannel.TELEGRAM and parsed.get("media_file_id"):
-            audio_url = await get_telegram_file_url(parsed["media_file_id"])
+            media_url = await get_telegram_file_url(parsed["media_file_id"])
 
-        if audio_url:
-            audio_bytes = await _download_audio(audio_url)
-            if not audio_bytes:
+        if media_url:
+            media_bytes = await _download_audio(media_url)
+            if not media_bytes:
                 await send_fn("⚠️ Couldn't download that voice note. Try sending text.")
                 return
+            media_type = "audio/ogg"
 
     elif parsed.get("type") == "image":
         msg_type = MessageType.IMAGE
         text_content = f"[Image]{': ' + parsed.get('caption', '') if parsed.get('caption') else ''}"
+        await send_fn("🖼️ _Scanning image/business card with Gemini Vision..._")
+
+        if channel == MessageChannel.WHATSAPP and parsed.get("image_url"):
+            media_url = parsed["image_url"]
+
+        if media_url:
+            media_bytes = await _download_audio(media_url)
+            if not media_bytes:
+                await send_fn("⚠️ Couldn't download that image.")
+                return
+            media_type = "image/jpeg"
 
     elif parsed.get("type") == "document":
         msg_type = MessageType.DOCUMENT
         text_content = f"[Document: {parsed.get('filename', 'file')}]"
 
-    if not text_content.strip() and not audio_bytes:
+    if not text_content.strip() and not media_bytes:
         return
 
     # ── 4. Save raw message to DB ─────────────────────────────────────────────
@@ -146,11 +159,12 @@ async def _process_message(
         text=text_content,
         user_context=user_context,
         conversation_history=conversation_history,
-        audio_bytes=audio_bytes,
+        media_bytes=media_bytes,
+        media_type=media_type,
     )
     
-    # If audio was provided, update the message with transcribed content directly from Gemini
-    if audio_bytes and intent_data.get("original_text"):
+    # If media was provided, update the message with transcribed content directly from Gemini
+    if media_bytes and intent_data.get("original_text"):
         db_message.transcribed_content = intent_data["original_text"]
         text_content = intent_data["original_text"]
         await db.flush()
