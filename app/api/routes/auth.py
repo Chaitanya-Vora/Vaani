@@ -2,6 +2,7 @@
 Auth routes — user registration, login, OAuth flows for Notion/Google.
 """
 
+from __future__ import annotations
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 

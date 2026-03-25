@@ -198,6 +198,41 @@ async def get_clients(user=Depends(get_current_user), db: AsyncSession = Depends
         for c in result.scalars().all()
     ]
 
+@router.get("/ideas")
+async def get_ideas(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    from app.models import Idea
+    result = await db.execute(
+        select(Idea).where(Idea.user_id == user.id).order_by(desc(Idea.created_at)).limit(50)
+    )
+    return [
+        {
+            "id": str(i.id),
+            "content": i.content,
+            "category": i.category,
+            "notion_url": i.notion_page_id,
+            "created_at": i.created_at.isoformat()
+        }
+        for i in result.scalars().all()
+    ]
+
+@router.get("/tasks")
+async def get_tasks(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    from app.models import UserTask
+    result = await db.execute(
+        select(UserTask).where(UserTask.user_id == user.id).order_by(desc(UserTask.created_at)).limit(50)
+    )
+    return [
+        {
+            "id": str(t.id),
+            "description": t.description,
+            "priority": t.priority.value,
+            "status": t.status.value,
+            "due_date": t.due_date.isoformat() if t.due_date else None,
+            "created_at": t.created_at.isoformat()
+        }
+        for t in result.scalars().all()
+    ]
+
 
 @router.patch("/me")
 async def update_profile(

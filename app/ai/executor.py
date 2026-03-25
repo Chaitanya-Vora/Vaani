@@ -89,6 +89,15 @@ async def execute_intent(
         elif intent == IntentType.PAYMENT_FOLLOWUP:
             result = await _handle_payment_followup(text, entities, user, language)
 
+        elif intent == IntentType.IDEA_DUMP:
+            result = await _handle_idea_dump(text, entities, user, db, language)
+
+        elif intent == IntentType.ADD_TASKS:
+            result = await _handle_add_tasks(text, entities, user, db, language)
+
+        elif intent == IntentType.QUERY_IDEAS:
+            result = await _handle_query_ideas(text, user, db)
+
         else:
             result = await _handle_unknown(text, user, language, plan)
 
@@ -868,6 +877,95 @@ async def _handle_payment_followup(text, entities, user, language):
         "notion_url": notion_url,
         "draft_message": draft_message,
     }
+
+
+async def _handle_idea_dump(text, entities, user, db, language):
+    """Save an organic idea to the DB and optionally Notion."""
+    from app.models import Idea
+    
+    # Extract a clean title/category using Haiku
+    ai_result = await execute_with_ai(
+        f"Extract a short category (e.g. Marketing, Product, Process) from this idea: {text}\nRespond only with the 1-2 word category.",
+        context={"language": "en"}
+    )
+    category = ai_result.get("output", "General Idea").strip()
+    
+    new_idea = Idea(user_id=user.id, content=text, category=category)
+    db.add(new_idea)
+    await db.flush()
+    
+    # Save to Notion if connected
+    notion_url = None
+    notion_integration = _get_integration(user, "notion")
+    if notion_integration:
+        notion_url = await notion.create_note_page(
+            access_token=notion_integration.access_token,
+            workspace_meta=notion_integration.metadata_,
+            title=f"Idea: {category}",
+            summary=text,
+            key_points=[], action_items=[], tags=["Idea Dump", category],
+            source_text=text
+        )
+    return {
+        "summary": f"💡 Idea secured under *{category}*! Ready to review when you are.",
+        "notion_url": notion_url
+    }
+
+async def _handle_add_tasks(text, entities, user, db, language):
+    """Parse a list of tasks, assign priority, save to DB, set Celery pings."""
+    from app.models import UserTask, TaskPriority
+    from app.tasks.reminder_tasks import schedule_reminder
+    
+    tasks_list = entities.get("tasks_list", [])
+    if not tasks_list:
+        tasks_list = [{"description": text, "priority": "medium", "due_date": None}]
+        
+    created = 0
+    for t in tasks_list:
+        desc = t.get("description", "Task")
+        prio_str = str(t.get("priority", "medium")).lower()
+        prio = TaskPriority.HIGH if "high" in prio_str else (TaskPriority.LOW if "low" in prio_str else TaskPriority.MEDIUM)
+        
+        task_obj = UserTask(
+            user_id=user.id,
+            description=desc,
+            priority=prio,
+            due_date=t.get("due_date")
+        )
+        db.add(task_obj)
+        created += 1
+        
+        # Schedule active ping
+        if t.get("due_date"):
+            schedule_reminder.delay(
+                user_id=str(user.id),
+                message=f"Priority {prio.value.upper()}: Did you finish '{desc}'?",
+                remind_at=t.get("due_date"),
+                channel="whatsapp"
+            )
+            
+    await db.flush()
+    return {"summary": f"🎯 {created} prioritized tasks added to your queue! I'll ping you."}
+
+async def _handle_query_ideas(text, user, db):
+    """Fetch recent ideas from DB and summarize them via AI."""
+    from sqlalchemy import select
+    from app.models import Idea
+    
+    result = await db.execute(
+        select(Idea).where(Idea.user_id == user.id).order_by(Idea.created_at.desc()).limit(10)
+    )
+    ideas = result.scalars().all()
+    
+    if not ideas:
+        return {"summary": "You haven't dumped any ideas yet. Just send me a voice note whenever inspiration strikes!"}
+        
+    ideas_text = "\\n".join([f"- [{i.category}] {i.content}" for i in ideas])
+    ai_result = await execute_with_ai(
+        f"Summarize these recent ideas for a WhatsApp message succinctly:\\n{ideas_text}",
+        context={"user_context": _get_user_ctx(user), "language": "en"}
+    )
+    return {"summary": ai_result.get("output", "Here are your recent ideas.")}
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

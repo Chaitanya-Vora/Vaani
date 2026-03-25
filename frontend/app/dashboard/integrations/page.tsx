@@ -8,53 +8,53 @@ import { Card, Button, Badge, Spinner } from '@/components/ui'
 const INTEGRATIONS = [
   {
     id: 'notion', name: 'Notion', icon: '📓',
-    desc: 'Vaani Second Brain — notes, tasks, CRM, compliance sab yahan save hota hai. REQUIRED.',
+    desc: 'Your Operational Second Brain. All notes, tasks, CRM entries, and compliance records sync securely here. REQUIRED.',
     category: 'Core', required: true,
     connectUrl: (userId: string) => `/api/auth/notion/connect?state=${userId}`,
   },
   {
-    id: 'google_calendar', name: 'Google Calendar + Gmail', icon: '📅',
-    desc: 'Tasks Google Tasks mein add hote hain, calendar events create hote hain, emails draft hoti hain.',
+    id: 'google_calendar', name: 'Google Workspace', icon: '📅',
+    desc: 'Tasks are created in Google Tasks, calendar events are scheduled, and emails are instantly drafted in Gmail.',
     category: 'Productivity', required: false,
     connectUrl: (userId: string) => `/api/auth/google/connect?state=${userId}`,
   },
   {
     id: 'zoho_crm', name: 'Zoho CRM', icon: '👥',
-    desc: 'Client interactions Zoho mein sync hoti hain. Indian businesses ke liye most popular CRM.',
+    desc: 'Client interactions sync natively to Zoho. The most adopted CRM for scaling organizations.',
     category: 'CRM', required: false,
     connectUrl: () => '#',
     comingSoon: false,
   },
   {
     id: 'tally', name: 'Tally', icon: '📊',
-    desc: 'Expense data Tally XML format mein export karo. CA ke liye direct import ready.',
+    desc: 'Export expense data automatically in Tally XML format. Ready for direct accountant import.',
     category: 'Accounting', required: false,
     connectUrl: () => '#',
     comingSoon: true,
   },
   {
     id: 'whatsapp', name: 'WhatsApp Business', icon: '💬',
-    desc: 'Aapka primary channel. Number connect karo taaki Vaani aapko messages bhej sake.',
+    desc: 'Your primary interface. Connect your number so Vaani can act proactively as your EA.',
     category: 'Messaging', required: true,
     connectUrl: () => 'https://business.whatsapp.com',
   },
   {
     id: 'linkedin', name: 'LinkedIn', icon: '💼',
-    desc: 'Draft kiye gaye posts directly LinkedIn pe publish karo.',
+    desc: 'Publish drafted executive updates and thought leadership directly to your LinkedIn feed.',
     category: 'Social', required: false,
     connectUrl: () => '#',
     comingSoon: true,
   },
   {
     id: 'razorpay', name: 'Razorpay', icon: '💳',
-    desc: 'Invoice payment status track karo. Payment received alerts WhatsApp pe.',
+    desc: 'Track invoice payment statuses and receive real-time WhatsApp alerts upon settlement.',
     category: 'Payments', required: false,
     connectUrl: () => '#',
     comingSoon: true,
   },
   {
     id: 'slack', name: 'Slack', icon: '💬',
-    desc: 'Vaani ko Slack se bhi use karo — team ke saath broadcast karo.',
+    desc: 'Deploy Vaani securely within your Slack workspace to broadcast updates to your team.',
     category: 'Messaging', required: false,
     connectUrl: () => '#',
     comingSoon: true,
@@ -85,60 +85,60 @@ export default function IntegrationsPage() {
 
   if (loading) return <DashboardShell><div className="flex justify-center py-24"><Spinner size="lg" /></div></DashboardShell>
 
-  const categories = [...new Set(INTEGRATIONS.map(i => i.category))]
+  const categories = Array.from(new Set(INTEGRATIONS.map(i => i.category)))
 
   return (
     <DashboardShell user={user}>
-      <div className="mb-6">
-        <h1 className="font-display font-700 text-2xl text-text-primary mb-1">Integrations</h1>
-        <p className="text-text-secondary text-sm">
-          {connected.length} of {INTEGRATIONS.filter(i => !i.comingSoon).length} connected
+      <div className="mb-8">
+        <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Integrations</h1>
+        <p className="text-zinc-500 text-base font-medium">
+          {connected.length} of {INTEGRATIONS.filter(i => !i.comingSoon).length} enterprise modules securely connected
         </p>
       </div>
 
       {!isConnected('notion') && (
-        <div className="bg-danger/5 border border-danger/20 rounded-xl p-5 mb-6 flex gap-3">
-          <AlertCircle className="w-5 h-5 text-danger flex-shrink-0" />
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-6 mb-8 flex gap-4 shadow-sm">
+          <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-display font-600 text-text-primary mb-1">Notion connect karna zaroori hai</p>
-            <p className="text-text-secondary text-sm">Notion Vaani ka brain hai — notes, tasks, CRM sab wahan save hota hai. Pehle yeh connect karo.</p>
+            <p className="font-display font-800 text-lg text-red-600 mb-1">Notion Connection Required</p>
+            <p className="text-red-500 text-sm font-medium">Notion acts as Vaani's long-term memory. Notes, tasks, and CRM leads are structured securely there. Please authenticate to use Vaani.</p>
           </div>
         </div>
       )}
 
       {categories.map(cat => (
-        <div key={cat} className="mb-8">
-          <p className="text-text-muted text-xs font-display font-600 uppercase tracking-widest mb-3">{cat}</p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div key={cat} className="mb-10">
+          <p className="text-zinc-400 text-xs font-display font-800 uppercase tracking-widest mb-4 pl-1">{cat}</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {INTEGRATIONS.filter(i => i.category === cat).map(intg => {
               const conn = isConnected(intg.id)
               return (
-                <Card key={intg.id} className={`flex flex-col gap-4 ${conn ? 'border-success/30' : intg.required ? 'border-brand/20' : ''}`}>
+                <Card key={intg.id} className={`flex flex-col gap-5 p-6 rounded-3xl ${conn ? 'border-brand/40 shadow-brand/10 bg-brand/5' : intg.required ? 'border-zinc-300 shadow-sm bg-white' : 'border-zinc-200 bg-white shadow-sm'}`}>
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{intg.icon}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-3xl bg-white shadow-sm w-12 h-12 flex items-center justify-center rounded-xl border border-zinc-100">{intg.icon}</span>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-display font-600 text-text-primary text-sm">{intg.name}</p>
-                          {intg.required && <span className="text-xs text-brand-light bg-brand/10 px-1.5 py-0.5 rounded">Required</span>}
+                        <div className="flex flex-col">
+                          <p className="font-display font-800 tracking-tight text-zinc-900 text-lg">{intg.name}</p>
+                          {intg.required && <span className="text-[10px] text-brand font-bold uppercase tracking-wider mt-0.5">Required Module</span>}
                         </div>
                       </div>
                     </div>
                     {conn ? (
-                      <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
+                      <CheckCircle className="w-6 h-6 text-brand flex-shrink-0" />
                     ) : intg.comingSoon ? (
-                      <Badge color="muted">Soon</Badge>
+                      <Badge color="muted" className="text-[10px] uppercase font-bold tracking-wider">Coming Soon</Badge>
                     ) : null}
                   </div>
-                  <p className="text-text-muted text-xs leading-relaxed flex-1">{intg.desc}</p>
+                  <p className="text-zinc-500 font-medium text-sm leading-relaxed flex-1">{intg.desc}</p>
                   <Button
-                    size="sm"
-                    variant={conn ? 'success' : intg.comingSoon ? 'ghost' : 'primary'}
+                    size="md"
+                    variant={conn ? 'primary' : intg.comingSoon ? 'ghost' : 'ghost'}
                     disabled={intg.comingSoon || conn}
                     onClick={() => handleConnect(intg)}
-                    className="w-full"
+                    className={`w-full font-bold ${conn ? 'bg-brand hover:bg-brand text-white opacity-80' : intg.comingSoon ? 'bg-zinc-100 cursor-not-allowed' : 'bg-zinc-900 text-white hover:bg-zinc-800'}`}
                   >
-                    {conn ? '✓ Connected' : intg.comingSoon ? 'Coming soon' : 'Connect karo'}
+                    {conn ? '✓ Connected Securely' : intg.comingSoon ? 'In Development' : 'Authenticate Integration'}
                   </Button>
                 </Card>
               )
@@ -147,14 +147,14 @@ export default function IntegrationsPage() {
         </div>
       ))}
 
-      <Card className="bg-bg-elevated mt-4">
-        <div className="flex gap-3">
-          <Plug className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+      <Card className="bg-zinc-50 border-zinc-200 mt-6 shadow-sm p-6 rounded-3xl">
+        <div className="flex gap-4">
+          <Plug className="w-6 h-6 text-zinc-900 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-display font-600 text-text-primary mb-1">800+ apps via Webhook</p>
-            <p className="text-text-muted text-sm">
-              Koi bhi app jo webhooks support karta hai — Zapier, Make, n8n — sab Vaani ke saath kaam karta hai.
-              Automations tab mein webhook URL milega.
+            <p className="font-display font-800 text-xl text-zinc-900 mb-2">Custom Webhook Infrastructure</p>
+            <p className="text-zinc-500 font-medium text-sm leading-relaxed">
+              Any application utilizing standard webhooks — Zapier, Make, n8n — integrates natively with Vaani payloads. 
+              Configure your endpoint coordinates directly inside the Automations module.
             </p>
           </div>
         </div>

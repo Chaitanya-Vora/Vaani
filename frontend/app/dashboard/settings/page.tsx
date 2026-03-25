@@ -40,80 +40,82 @@ export default function SettingsPage() {
 
   return (
     <DashboardShell user={user}>
-      <div className="mb-6">
-        <h1 className="font-display font-700 text-2xl text-text-primary mb-1">Settings</h1>
-        <p className="text-text-secondary text-sm">Profile aur business preferences update karo</p>
+      <div className="mb-8">
+        <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Organization Settings</h1>
+        <p className="text-zinc-500 font-medium text-base">Manage your executive profile and Vaani operational preferences.</p>
       </div>
 
-      <div className="max-w-2xl space-y-6">
-        <Card>
-          <h3 className="font-display font-600 text-text-primary mb-5">Profile</h3>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="Aapka naam" value={form.name} onChange={set('name')} placeholder="Rajesh Mehta" />
-              <Input label="Business naam" value={form.business_name} onChange={set('business_name')} placeholder="Mehta & Co." />
+      <div className="max-w-3xl space-y-8">
+        <Card className="bg-white border-zinc-200 shadow-sm p-8 rounded-[2rem]">
+          <h3 className="font-display font-800 text-xl text-zinc-900 mb-6 tracking-tight">Executive Profile</h3>
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-5">
+              <Input label="Full Name" value={form.name} onChange={set('name')} placeholder="Rajesh Mehta" />
+              <Input label="Company Name" value={form.business_name} onChange={set('business_name')} placeholder="Mehta & Co." />
             </div>
-            <Input label="Email" value={user?.email || ''} disabled className="opacity-50 cursor-not-allowed" />
-            <Input label="GSTIN (optional)" value={form.gstin} onChange={set('gstin')}
-              placeholder="22AAAAA0000A1Z5" maxLength={15}
-              help="Invoice generation aur compliance tracking ke liye" />
-            <Select label="Business type" value={form.business_type} onChange={set('business_type')}
+            <Input label="Registered Email" value={user?.email || ''} disabled className="opacity-60 cursor-not-allowed bg-zinc-50" />
+            <div>
+              <Input label="GSTIN (Optional)" value={form.gstin} onChange={set('gstin')}
+                placeholder="22AAAAA0000A1Z5" maxLength={15} />
+              <p className="text-zinc-400 text-[11px] font-bold mt-2 ml-1">Utilized for automated invoice generation and compliance reporting.</p>
+            </div>
+            <Select label="Entity Classification" value={form.business_type} onChange={set('business_type')}
               options={[
-                { value: 'startup',    label: 'Startup / Tech' },
-                { value: 'msme',       label: 'MSME / Small Business' },
-                { value: 'ca_firm',    label: 'CA Firm' },
-                { value: 'aif',        label: 'AIF / PMS / Investment' },
-                { value: 'freelancer', label: 'Freelancer / Consultant' },
-                { value: 'd2c',        label: 'D2C / E-commerce' },
+                { value: 'startup',    label: 'Venture Backed Startup' },
+                { value: 'msme',       label: 'MSME / Retail' },
+                { value: 'ca_firm',    label: 'CA / Accounting Agency' },
+                { value: 'aif',        label: 'AIF / PMS / PE Firm' },
+                { value: 'freelancer', label: 'Independent Consultant' },
+                { value: 'd2c',        label: 'D2C / E-commerce Brand' },
               ]} />
           </div>
         </Card>
 
-        <Card>
-          <h3 className="font-display font-600 text-text-primary mb-5">Messaging</h3>
-          <div className="space-y-4">
+        <Card className="bg-white border-zinc-200 shadow-sm p-8 rounded-[2rem]">
+          <h3 className="font-display font-800 text-xl text-zinc-900 mb-6 tracking-tight">Secure Communications</h3>
+          <div className="space-y-6">
             <div>
-              <Input label="WhatsApp number (+91 ke saath)" value={form.whatsapp_number}
+              <Input label="WhatsApp Number (+91)" value={form.whatsapp_number}
                 onChange={set('whatsapp_number')} placeholder="+919876543210" />
-              <p className="text-text-muted text-xs mt-1.5 flex items-center gap-1.5">
-                <MessageCircle className="w-3.5 h-3.5" />
-                Isi number pe reminders aur responses aayenge
+              <p className="text-zinc-500 font-semibold text-xs mt-2 flex items-center gap-1.5">
+                <MessageCircle className="w-4 h-4 text-brand" />
+                All agentic reminders and responses will route exclusively to this number.
               </p>
             </div>
-            <Select label="Preferred language" value={form.language_pref} onChange={set('language_pref')}
+            <Select label="Preferred AI Intelligence Language" value={form.language_pref} onChange={set('language_pref')}
               options={[
                 { value: 'en', label: 'English' },
-                { value: 'hi', label: 'Hindi (हिंदी)' },
-                { value: 'mr', label: 'Marathi (मराठी)' },
-                { value: 'gu', label: 'Gujarati (ગુજરાતી)' },
-                { value: 'ta', label: 'Tamil (தமிழ்)' },
-                { value: 'te', label: 'Telugu (తెలుగు)' },
+                { value: 'hi', label: 'Hindi / Hinglish' },
+                { value: 'mr', label: 'Marathi' },
+                { value: 'gu', label: 'Gujarati' },
+                { value: 'ta', label: 'Tamil' },
+                { value: 'te', label: 'Telugu' },
               ]} />
           </div>
         </Card>
 
-        <Card className="bg-bg-elevated">
-          <h3 className="font-display font-600 text-text-primary mb-3">WhatsApp setup guide</h3>
-          <ol className="space-y-3 text-sm text-text-secondary">
+        <Card className="bg-zinc-50 border-zinc-200 p-8 rounded-[2rem]">
+          <h3 className="font-display font-800 text-xl text-zinc-900 mb-4 tracking-tight">WhatsApp Initialization Guide</h3>
+          <ol className="space-y-4 text-sm text-zinc-600 font-medium">
             {[
-              'Apne phone mein +91-XXXXX-XXXXX ko "Vaani AI" naam se save karo',
-              'WhatsApp pe "Hello Vaani" bhejo — aapka account link ho jaayega',
-              'Pehla voice note bhejo — magic dekhein!',
+              'Save +91-XXXXX-XXXXX as "Vaani Executive Assistant" in your device contacts.',
+              'Send "Hello Vaani" over WhatsApp to securely authenticate your device.',
+              'Deploy your first voice-note operation instantly.',
             ].map((step, i) => (
-              <li key={i} className="flex gap-3">
-                <span className="w-6 h-6 rounded-full bg-brand/15 text-brand text-xs font-display font-700 flex items-center justify-center flex-shrink-0">{i + 1}</span>
+              <li key={i} className="flex gap-4 items-center">
+                <span className="w-7 h-7 rounded-xl bg-zinc-900 text-white text-xs font-display font-800 flex items-center justify-center flex-shrink-0 shadow-sm">{i + 1}</span>
                 {step}
               </li>
             ))}
           </ol>
         </Card>
 
-        <div className="flex items-center gap-3">
-          <Button onClick={save} loading={saving}>
-            <Save className="w-4 h-4" />
-            {saved ? 'Saved ✓' : 'Save karo'}
+        <div className="flex items-center gap-4 pt-2">
+          <Button onClick={save} loading={saving} size="lg" className="px-8 font-bold">
+            <Save className="w-4 h-4 mr-2" />
+            {saved ? 'Settings Enforced ✓' : 'Enforce Changes'}
           </Button>
-          {saved && <span className="text-success text-sm font-display">Changes save ho gaye!</span>}
+          {saved && <span className="text-brand font-bold text-sm bg-brand/10 px-4 py-2 rounded-lg">Changes securely persisted to database.</span>}
         </div>
       </div>
     </DashboardShell>

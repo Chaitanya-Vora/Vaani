@@ -2,6 +2,7 @@
 Async database layer — PostgreSQL via SQLAlchemy + Redis for cache/queues.
 """
 
+from __future__ import annotations
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 import redis.asyncio as aioredis

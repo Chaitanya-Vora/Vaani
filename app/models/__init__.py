@@ -66,8 +66,10 @@ class IntentType(str, enum.Enum):
     PAYMENT_FOLLOWUP = "payment_followup"
     COMMITMENT_CAPTURE = "commitment_capture"
     LEAD_CAPTURE = "lead_capture"
-    DATA_QUERY = "data_query"
     HABIT_LOG = "habit_log"
+    IDEA_DUMP = "idea_dump"
+    ADD_TASKS = "add_tasks"
+    QUERY_IDEAS = "query_ideas"
     UNKNOWN = "unknown"
 
 
@@ -76,6 +78,17 @@ class TaskStatus(str, enum.Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
+
+
+class UserTaskStatus(str, enum.Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+
+
+class TaskPriority(str, enum.Enum):
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
 
 
 class AutomationTrigger(str, enum.Enum):
@@ -131,6 +144,8 @@ class User(Base):
     clients = relationship("Client", back_populates="user")
     expenses = relationship("Expense", back_populates="user")
     invoices = relationship("Invoice", back_populates="user")
+    ideas = relationship("Idea", back_populates="user")
+    user_tasks = relationship("UserTask", back_populates="user")
 
 
 class Subscription(Base):
@@ -362,3 +377,32 @@ class ComplianceReminder(Base):
     __table_args__ = (
         Index("idx_compliance_user_due", "user_id", "due_date"),
     )
+
+class Idea(Base):
+    """Organic Idea Organizer backend."""
+    __tablename__ = "ideas"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id"), index=True)
+    content = Column(Text)
+    category = Column(String(100), nullable=True)
+    notion_page_id = Column(String(255), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="ideas")
+
+
+class UserTask(Base):
+    """Personal/Professional task priority manager."""
+    __tablename__ = "user_tasks"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id"), index=True)
+    description = Column(Text)
+    priority = Column(Enum(TaskPriority), default=TaskPriority.MEDIUM)
+    status = Column(Enum(UserTaskStatus), default=UserTaskStatus.PENDING)
+    due_date = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    user = relationship("User", back_populates="user_tasks")

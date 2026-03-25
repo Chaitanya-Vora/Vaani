@@ -6,7 +6,7 @@ import {
   Mic, CheckSquare, Users, ShieldCheck,
   TrendingUp, Sparkles, Target, Zap
 } from 'lucide-react'
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts'
 import { api } from '@/lib/api'
 import DashboardShell from '@/components/layout/DashboardShell'
 
@@ -21,7 +21,19 @@ const INTENT_LABELS: Record<string, { label: string; color: string }> = {
   generate_invoice: { label: 'Invoice created', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
 }
 
+import { Plug } from 'lucide-react'
+
+import { Suspense } from 'react'
+
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<DashboardShell><div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin" /></div></DashboardShell>}>
+      <DashboardContent />
+    </Suspense>
+  )
+}
+
+function DashboardContent() {
   const router = useRouter()
   const params = useSearchParams()
   const [user,       setUser]       = useState<any>(null)
@@ -37,7 +49,10 @@ export default function DashboardPage() {
           api.dashboard.me(), api.dashboard.stats(), api.dashboard.commitments()
         ])
         setUser(u); setStats(s); setCommitments((c as any[]).slice(0, 5));
-      } catch { router.push('/auth/login') }
+      } catch {
+        // Enforce strict production authentication; no dummy loops.
+        router.push('/auth/login')
+      }
       finally { setLoading(false) }
     }
     load()
@@ -51,15 +66,16 @@ export default function DashboardPage() {
     </DashboardShell>
   )
 
-  const cashflowData = [
-    { name: 'Mon', in: 12000, out: 4000 },
-    { name: 'Tue', in: 19000, out: 8000 },
-    { name: 'Wed', in: 15000, out: 6000 },
-    { name: 'Thu', in: 8000,  out: 12000 },
-    { name: 'Fri', in: 22000, out: 5000 },
-    { name: 'Sat', in: 3000,  out: 2000 },
-    { name: 'Sun', in: 5000,  out: 1000 },
-  ]
+  const intentData = stats?.tasks_by_intent 
+    ? Object.entries(stats.tasks_by_intent).map(([k, v]) => ({ 
+        name: INTENT_LABELS[k]?.label || k.replace('_', ' '), 
+        count: v 
+      }))
+    : []
+
+  const totalActions = stats?.tasks_by_intent 
+    ? Object.values(stats.tasks_by_intent).reduce((a: any, b: any) => a + b, 0) 
+    : 0
 
   const containerFramer = {
     hidden: { opacity: 0 },
@@ -97,17 +113,19 @@ export default function DashboardPage() {
         <h1 className="font-display font-800 text-3xl text-zinc-900 tracking-tight">
           Command Center
         </h1>
-        <p className="text-zinc-500 font-medium mt-1">{user?.business_name} • Active Configuration: {user?.plan?.toUpperCase()}</p>
+        <p className="text-zinc-500 font-medium mt-1">
+          {user?.business_name} • System is active and monitoring
+        </p>
       </div>
 
       <motion.div variants={containerFramer} initial="hidden" animate="show">
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            { label: 'Client Reliability Score', value: '94/100', icon: ShieldCheck, sub: 'Commitments Met' },
-            { label: 'Active Observer', value: 'Celery', icon: Zap, sub: 'Always Listening' },
-            { label: 'AI Actions Processed', value: '1,204', icon: CheckSquare, sub: 'Used this month' },
-            { label: 'CRM Leads Extracted', value: stats?.clients || 15, icon: Users, sub: 'Via Business Cards' },
+            { label: 'Active Integrations', value: user?.connected_integrations?.length || 0, icon: Plug, sub: 'Connected Apps' },
+            { label: 'WhatsApp Messages', value: stats?.messages_30d || 0, icon: Zap, sub: 'Last 30 days' },
+            { label: 'AI Actions Processed', value: totalActions, icon: CheckSquare, sub: 'Used this month' },
+            { label: 'CRM Leads Extracted', value: stats?.clients || 0, icon: Users, sub: 'Auto-captured' },
           ].map((stat, i) => (
             <motion.div variants={itemFramer} key={i}>
               <div className="bg-white border border-zinc-200 rounded-[1.5rem] p-5 shadow-sm hover:shadow-md transition-shadow">
@@ -129,28 +147,32 @@ export default function DashboardPage() {
           <motion.div variants={itemFramer} className="lg:col-span-2">
             <div className="bg-white border border-zinc-200 rounded-[2rem] p-8 shadow-sm h-full">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="font-display font-800 text-xl text-zinc-900 tracking-tight">Financial Overview</h2>
+                <h2 className="font-display font-800 text-xl text-zinc-900 tracking-tight">AI Action Distribution</h2>
               </div>
               <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={cashflowData}>
-                    <XAxis dataKey="name" stroke="#a1a1aa" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#a1a1aa" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v/1000}k`} />
-                    <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #e4e4e7', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} itemStyle={{ color: '#18181b', fontWeight: 'bold' }} />
-                    <Area type="monotone" dataKey="in" stroke="#10b981" strokeWidth={3} fill="url(#colorIn)" fillOpacity={0.2} name="Credits (In)" />
-                    <Area type="monotone" dataKey="out" stroke="#ef4444" strokeWidth={3} fill="url(#colorOut)" fillOpacity={0.15} name="Debts (Out)" />
-                    <defs>
-                      <linearGradient id="colorIn" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorOut" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                  </AreaChart>
-                </ResponsiveContainer>
+                {intentData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={intentData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                      <XAxis dataKey="name" stroke="#a1a1aa" fontSize={11} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#a1a1aa" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                      <Tooltip 
+                        cursor={{ fill: '#f4f4f5' }}
+                        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e4e4e7', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                        itemStyle={{ color: '#18181b', fontWeight: 'bold' }} 
+                      />
+                      <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                        {intentData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill="#18181b" />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-zinc-400">
+                    <Sparkles className="w-8 h-8 mb-2 opacity-50" />
+                    <p className="text-sm font-medium">No actions processed yet</p>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
@@ -187,41 +209,78 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
-        <motion.div variants={itemFramer} className="mb-6">
-          <div className="bg-white border border-zinc-200 rounded-[2rem] p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display font-800 text-xl text-zinc-900 flex items-center gap-2 tracking-tight">
-                <TrendingUp className="w-5 h-5 text-zinc-900" /> Operational Action Log
-              </h2>
+        <div className="grid lg:grid-cols-3 gap-6 mb-6">
+          <motion.div variants={itemFramer} className="lg:col-span-2">
+            <div className="bg-white border border-zinc-200 rounded-[2rem] p-8 shadow-sm h-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-display font-800 text-xl text-zinc-900 flex items-center gap-2 tracking-tight">
+                  <TrendingUp className="w-5 h-5 text-zinc-900" /> Operational Action Log
+                </h2>
+              </div>
+              <div className="space-y-3">
+                {stats?.recent_tasks?.length > 0 ? stats.recent_tasks.map((t: any) => {
+                  const meta = INTENT_LABELS[t.intent] || { label: t.intent, color: 'bg-zinc-100 text-zinc-800 border-zinc-200' }
+                  return (
+                    <div key={t.id} className="flex items-center gap-5 py-3 border-b border-zinc-50 hover:bg-zinc-50 px-4 rounded-2xl transition-colors last:border-0 cursor-pointer">
+                      <div className={`flex-shrink-0 text-[11px] font-bold tracking-wide uppercase px-3 py-1.5 rounded-lg border ${meta.color} w-36 text-center shadow-sm`}>
+                        {meta.label}
+                      </div>
+                      <div className="flex-1 min-w-0 flex items-center justify-between">
+                        <p className="text-zinc-900 text-[15px] font-semibold truncate pr-4">{t.summary || 'Processing operation...'}</p>
+                        <p className="text-zinc-400 text-[11px] font-bold whitespace-nowrap hidden sm:block">
+                          {new Date(t.created_at).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                }) : (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Mic className="w-8 h-8 text-zinc-300" />
+                    </div>
+                    <p className="text-zinc-900 text-base font-bold">No operations processed yet.</p>
+                    <p className="text-zinc-500 text-sm font-medium mt-1">Send a voice note or image to Vaani on WhatsApp to see it appear here.</p>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="space-y-3">
-              {stats?.recent_tasks?.length > 0 ? stats.recent_tasks.map((t: any) => {
-                const meta = INTENT_LABELS[t.intent] || { label: t.intent, color: 'bg-zinc-100 text-zinc-800 border-zinc-200' }
-                return (
-                  <div key={t.id} className="flex items-center gap-5 py-3 border-b border-zinc-50 hover:bg-zinc-50 px-4 rounded-2xl transition-colors last:border-0 cursor-pointer">
-                    <div className={`flex-shrink-0 text-[11px] font-bold tracking-wide uppercase px-3 py-1.5 rounded-lg border ${meta.color} w-36 text-center shadow-sm`}>
-                      {meta.label}
-                    </div>
-                    <div className="flex-1 min-w-0 flex items-center justify-between">
-                      <p className="text-zinc-900 text-[15px] font-semibold truncate pr-4">{t.summary || 'Processing operation...'}</p>
-                      <p className="text-zinc-400 text-[11px] font-bold whitespace-nowrap hidden sm:block">
-                        {new Date(t.created_at).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                  </div>
-                )
-              }) : (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Mic className="w-8 h-8 text-zinc-300" />
-                  </div>
-                  <p className="text-zinc-900 text-base font-bold">No operations processed yet.</p>
-                  <p className="text-zinc-500 text-sm font-medium mt-1">Send a voice note or image to Vaani on WhatsApp to see it appear here.</p>
+          </motion.div>
+
+          <motion.div variants={itemFramer}>
+            <div className="bg-white border border-zinc-200 rounded-[2rem] p-8 shadow-sm h-full flex flex-col items-center justify-center text-center">
+              <h2 className="font-display font-800 text-xl text-zinc-900 tracking-tight w-full text-left mb-6">Task Capacity</h2>
+              <div className="w-full h-48 relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Used', value: user?.tasks_used || 0, color: '#18181b' },
+                        { name: 'Available', value: Math.max(0, (user?.tasks_limit || 50) - (user?.tasks_used || 0)), color: '#f4f4f5' }
+                      ]}
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {[{ color: '#18181b' }, { color: '#f4f4f5' }].map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
+                  <span className="text-3xl font-display font-900 text-zinc-900">
+                    {Math.round(((user?.tasks_used || 0) / (user?.tasks_limit || 50)) * 100)}%
+                  </span>
                 </div>
-              )}
+              </div>
+              <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mt-4">
+                {user?.tasks_used} / {user?.tasks_limit === 999999 ? '∞' : user?.tasks_limit} tasks consumed
+              </p>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
 
       </motion.div>
     </DashboardShell>

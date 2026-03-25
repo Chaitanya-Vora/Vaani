@@ -23,7 +23,6 @@ from app.tasks.celery_app import celery_app  # noqa — ensures Celery is config
 structlog.configure(
     processors=[
         structlog.stdlib.add_log_level,
-        structlog.stdlib.add_logger_name,
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.JSONRenderer(),
     ],

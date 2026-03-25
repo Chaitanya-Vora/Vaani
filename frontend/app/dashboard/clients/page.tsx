@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Users, Phone, Mail, Building, MoreVertical } from 'lucide-react'
+import { Users, Phone, Mail, Building, MoreVertical, ExternalLink } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import DashboardShell from '@/components/layout/DashboardShell'
@@ -13,7 +13,7 @@ export default function ClientsPage() {
 
   useEffect(() => {
     Promise.all([api.dashboard.me(), api.dashboard.clients()])
-      .then(([u, c]) => { setUser(u); setClients(c); })
+      .then(([u, c]) => { setUser(u); setClients(c as any[]); })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
@@ -26,67 +26,67 @@ export default function ClientsPage() {
   }
 
   const itemFramer = {
-    hidden: { opacity: 0, scale: 0.95 },
+    hidden: { opacity: 0, scale: 0.98 },
     show: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 24 } }
   }
 
   return (
     <DashboardShell user={user}>
-      <div className="mb-6 flex justify-between items-end">
+      <div className="mb-8 flex justify-between items-end">
         <div>
-          <h1 className="font-display font-800 text-2xl text-text-primary mb-1 tracking-tight">Lead Sniper CRM</h1>
-          <p className="text-text-secondary text-sm">
-            Forward a VCF map or voice note on WhatsApp to auto-inject leads here.
+          <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Lead Sniper CRM</h1>
+          <p className="text-zinc-500 font-medium text-base">
+            Forward a VCF card or raw voice note on WhatsApp to auto-inject leads here.
           </p>
         </div>
-        <button className="bg-brand hover:bg-brand-light text-white text-sm font-display font-600 px-4 py-2 rounded-xl transition-all shadow-brand">
+        <button className="bg-zinc-900 hover:bg-zinc-800 text-white text-sm font-display font-700 px-6 py-2.5 rounded-full transition-all shadow-sm">
           + Add Lead Manually
         </button>
       </div>
 
-      <motion.div variants={containerFramer} initial="hidden" animate="show" className="grid lg:grid-cols-2 gap-4">
+      <motion.div variants={containerFramer} initial="hidden" animate="show" className="grid lg:grid-cols-2 lg:grid-cols-3 gap-5">
         {clients.length === 0 && (
-          <div className="col-span-2 text-center py-20 px-4 bg-bg-surface border border-bg-border rounded-2xl">
-            <Users className="w-8 h-8 text-text-muted mx-auto mb-3 opacity-30" />
-            <p className="text-text-muted text-sm font-500">No leads captured yet.</p>
-            <p className="text-text-muted text-xs mt-1">Forward a VCF card on WhatsApp to log your first lead.</p>
+          <div className="col-span-full text-center py-24 px-4 bg-zinc-50 border border-zinc-200 rounded-[2rem]">
+            <Users className="w-10 h-10 text-zinc-300 mx-auto mb-4" />
+            <p className="text-zinc-600 text-base font-bold">No verified leads captured yet.</p>
+            <p className="text-zinc-400 font-medium text-sm mt-1">Forward a standard VCF card on WhatsApp to log your first lead.</p>
           </div>
         )}
         {clients.map(c => {
           const status = c.tags?.length > 0 ? c.tags[0] : 'Lead';
           return (
           <motion.div variants={itemFramer} key={c.id}>
-            <Card className="hover:border-teal/30 transition-colors group relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-teal/5 rounded-full blur-[40px] pointer-events-none" />
+            <Card className="hover:border-zinc-300 bg-white border-zinc-200 shadow-sm transition-all group relative overflow-hidden p-6 rounded-3xl h-full flex flex-col">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full blur-[40px] pointer-events-none" />
               
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-bg-elevated flex items-center justify-center font-display font-700 text-teal border border-bg-border">
+              <div className="flex justify-between items-start mb-5 relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-zinc-100 flex items-center justify-center font-display font-800 text-zinc-900 border border-zinc-200 text-lg shadow-sm">
                     {c.name.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="font-display font-700 text-text-primary text-sm">{c.name}</h3>
-                    <p className="text-text-muted text-[11px] uppercase tracking-wider font-600 mt-0.5">POC: {c.company || 'Unknown'}</p>
+                    <h3 className="font-display font-800 tracking-tight text-zinc-900 text-lg">{c.name}</h3>
+                    <p className="text-zinc-400 text-[10px] uppercase tracking-widest font-bold mt-0.5">POC: {c.company || 'Unknown Entity'}</p>
                   </div>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <Badge color={status.includes('Lead') ? 'brand' : 'success'} className="uppercase tracking-wider text-[9px] px-2">{status}</Badge>
-                  <button className="text-text-muted hover:text-text-primary transition-colors"><MoreVertical className="w-4 h-4" /></button>
+                  <Badge color={status.includes('Lead') ? 'brand' : 'success'} className="uppercase tracking-widest text-[9px] font-bold px-2 py-1">{status}</Badge>
+                  <button className="text-zinc-400 hover:text-zinc-900 transition-colors"><MoreVertical className="w-5 h-5" /></button>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-xs text-text-secondary">
-                  <Mail className="w-3.5 h-3.5 text-text-muted" /> {c.email || 'No email provided'}
+              <div className="space-y-3 flex-1 relative z-10">
+                <div className="flex items-center gap-3 text-sm font-medium text-zinc-600">
+                  <Mail className="w-4 h-4 text-zinc-400" /> {c.email || 'No email associated'}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-text-secondary">
-                  <Phone className="w-3.5 h-3.5 text-text-muted" /> {c.phone || 'No phone provided'}
+                <div className="flex items-center gap-3 text-sm font-medium text-zinc-600">
+                  <Phone className="w-4 h-4 text-zinc-400" /> {c.phone || 'No phone configured'}
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-bg-border/50 flex justify-between items-center text-[11px] text-text-muted">
-                <span>Last contact: <span className="text-text-primary">{c.last_contacted ? new Date(c.last_contacted).toLocaleDateString() : 'Never'}</span></span>
-                <span className="cursor-pointer hover:text-brand transition-colors">View Notion Node →</span>
+              <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center text-xs font-semibold text-zinc-400 relative z-10">
+                <span>Last action: <span className="text-zinc-900">{c.last_contacted ? new Date(c.last_contacted).toLocaleDateString() : 'Pending'}</span></span>
+                <span className="cursor-pointer hover:text-brand transition-colors text-brand flex items-center gap-1">Notion <ExternalLink className="w-3 h-3" /></span>
               </div>
             </Card>
           </motion.div>

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Mic, BrainCircuit, Target, Share2, Receipt,
   ArrowRight, CheckCircle, Menu, X, Database,
-  Zap, ArrowUpRight, Activity, Play
+  Zap, ArrowUpRight, Activity, Play, Lightbulb
 } from 'lucide-react'
 
 const FEATURES = [
@@ -124,7 +124,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 bg-white border border-zinc-200 shadow-sm rounded-full px-4 py-1.5 mb-8">
               <span className="text-brand text-xs font-semibold tracking-wide">Vaani OS 2.0 is live</span>
               <span className="w-1 h-1 bg-zinc-300 rounded-full" />
-              <Link href="/auth/signup" className="text-zinc-600 hover:text-zinc-900 text-xs font-medium flex items-center gap-1 transition-colors">
+              <Link href="/announcement" className="text-zinc-600 hover:text-zinc-900 text-xs font-medium flex items-center gap-1 transition-colors">
                 Read the announcement <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -189,9 +189,14 @@ export default function LandingPage() {
 
       {/* ── Logos marquee ── */}
       <section className="py-16 border-b border-zinc-100 bg-white relative overflow-hidden">
-        <p className="text-center text-zinc-400 text-sm font-semibold mb-8">Trusted by operators using</p>
+        <p className="text-center text-zinc-400 text-sm font-semibold mb-8">Integrated natively with the infrastructure you already use</p>
+        
+        {/* We duplicate the array exactly once so that translateX(-50%) creates a seamless infinite loop without gaps */}
         <div className="flex animate-marquee gap-16 w-max items-center px-10">
-          {['Notion', 'Google Space', 'WhatsApp', 'Slack', 'Zoho CRM', 'Tally', 'Razorpay', 'MS Teams', 'Notion', 'Google Space', 'WhatsApp', 'Slack'].map((name, i) => (
+          {[
+            'Microsoft Teams', 'Outlook', 'Google Workspace', 'WhatsApp', 'Notion', 'Slack', 'Zoho CRM', 'Tally', 'Razorpay',
+            'Microsoft Teams', 'Outlook', 'Google Workspace', 'WhatsApp', 'Notion', 'Slack', 'Zoho CRM', 'Tally', 'Razorpay'
+          ].map((name, i) => (
             <span key={i} className="text-zinc-800 text-xl font-display font-bold tracking-tight whitespace-nowrap opacity-30 hover:opacity-100 transition-opacity flex items-center gap-2 grayscale hover:grayscale-0">
               {name}
             </span>
@@ -298,6 +303,44 @@ export default function LandingPage() {
                       <div className="flex items-center gap-2 mb-1"><div className="w-3 h-3 border-2 border-zinc-400 rounded-sm"></div><div className="w-1/2 h-2 bg-zinc-200 rounded-full"></div></div>
                       <div className="flex items-center gap-2"><div className="w-3 h-3 border-2 border-zinc-400 rounded-sm"></div><div className="w-1/3 h-2 bg-zinc-200 rounded-full"></div></div>
                     </div>
+                 </div>
+              </div>
+            </div>
+
+            {/* Capability 4 */}
+            <div className="grid md:grid-cols-2 gap-12 items-center bg-white p-8 md:p-12 rounded-[3xl] border border-zinc-100 shadow-sm">
+              <div className="order-2 md:order-1 bg-zinc-50 rounded-[2rem] p-6 border border-zinc-100 shadow-inner flex flex-col items-center">
+                 <div className="bg-white rounded-2xl w-full p-6 shadow-sm border border-zinc-200 mb-4 transform -rotate-1 hover:rotate-0 transition-transform cursor-pointer">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-zinc-400 mb-2 flex items-center gap-1"><Lightbulb className="w-3 h-3"/> CATEGORY: PRODUCT</p>
+                    <p className="text-zinc-800 font-medium text-lg leading-snug">Let's build a one-click demo that skips auth for VCs.</p>
+                 </div>
+              </div>
+              <div className="order-1 md:order-2">
+                <div className="w-12 h-12 bg-zinc-900 text-white rounded-2xl flex items-center justify-center font-bold text-xl mb-6 shadow-sm">4</div>
+                <h3 className="text-3xl font-display font-800 text-zinc-900 mb-4 tracking-tight">The "Shower Thought" Vault</h3>
+                <p className="text-zinc-500 text-lg font-medium leading-relaxed">
+                  Great ideas hit you randomly. You text them to yourself, and they die there. With Vaani, just send a quick voice note "Idea: Let's build a one-click demo". We categorize it and permanently store it in your pristine Idea Vault.
+                </p>
+              </div>
+            </div>
+
+            {/* Capability 5 */}
+            <div className="grid md:grid-cols-2 gap-12 items-center bg-white p-8 md:p-12 rounded-[3xl] border border-zinc-100 shadow-sm">
+              <div>
+                <div className="w-12 h-12 bg-zinc-900 text-white rounded-2xl flex items-center justify-center font-bold text-xl mb-6 shadow-sm">5</div>
+                <h3 className="text-3xl font-display font-800 text-zinc-900 mb-4 tracking-tight">The Active Priority Queue</h3>
+                <p className="text-zinc-500 text-lg font-medium leading-relaxed">
+                  Start your morning by listing 3 things you <i>must</i> get done today. We arrange them by priority into your command center, and proactively ping your WhatsApp checking in on your high priorities before you sleep.
+                </p>
+              </div>
+              <div className="bg-zinc-50 rounded-[2rem] p-6 border border-zinc-100 shadow-inner space-y-3">
+                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-zinc-200 border-l-4 border-l-red-500 flex justify-between items-center group hover:bg-zinc-50 transition-colors">
+                    <p className="text-zinc-800 font-medium text-sm">Close Apex deal terms</p>
+                    <span className="text-[10px] uppercase font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-md">High</span>
+                 </div>
+                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-zinc-200 border-l-4 border-l-orange-400 flex justify-between items-center">
+                    <p className="text-zinc-800 font-medium text-sm">Send NDA to new hire</p>
+                    <span className="text-[10px] uppercase font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-md">Medium</span>
                  </div>
               </div>
             </div>

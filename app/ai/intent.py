@@ -3,6 +3,7 @@ Intent detection — Claude classifies every message into a structured action.
 Uses Haiku for fast classification, Sonnet for complex drafting tasks.
 """
 
+from __future__ import annotations
 import json
 import time
 from typing import Optional
@@ -32,8 +33,11 @@ INTENT TYPES (Hinglish Supported):
 - LEAD_CAPTURE: "Ye naya client hai", "Forwarded VCF"
 - DATA_QUERY: "Pichli baar kya rate diya tha?", "Last rate for Sharma ji?"
 - HABIT_LOG: "Today's gym done", "5km ho gaya"
+- IDEA_DUMP: "Shower thought: referral loops", "Idea for new SaaS"
+- ADD_TASKS: "I need to call Rahul today, and draft the NDA tomorrow"
+- QUERY_IDEAS: "What was my idea about marketing?", "Show me my recent ideas"
 - save_note: General information saving
-- create_task: Action items
+- create_task: Single action item
 - set_reminder: Explicit time-based
 - log_meeting: Meeting summary
 - update_crm: Update client info
@@ -69,7 +73,8 @@ JSON format:
     "attendees": [],
     "follow_up_date": null or "YYYY-MM-DD",
     "gst_rate": null or number,
-    "compliance_type": null or string
+    "compliance_type": null or string,
+    "tasks_list": [{"description": string, "priority": "high|medium|low", "due_date": "YYYY-MM-DD"}]
   },
   "urgency": "low|medium|high",
   "response_hint": "one line: what to do with this"

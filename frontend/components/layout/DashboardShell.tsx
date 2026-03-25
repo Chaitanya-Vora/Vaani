@@ -6,13 +6,15 @@ import { clsx } from 'clsx'
 import {
   LayoutDashboard, Users, Zap, Plug, CreditCard,
   LogOut, Menu, X, MessageCircle, ChevronRight,
-  Target, Zap as ZapIcon, LayoutPanelLeft
+  Target, Zap as ZapIcon, LayoutPanelLeft, Lightbulb, CheckCircle
 } from 'lucide-react'
 import { clearToken } from '@/lib/api'
 
 const NAV = [
   { href: '/dashboard',              icon: LayoutDashboard, label: 'Command Center' },
-  { href: '/dashboard/commitments',  icon: Target,     label: 'Commitments' },
+  { href: '/dashboard/tasks',        icon: CheckCircle,     label: 'Priority Tasks' },
+  { href: '/dashboard/commitments',  icon: Target,          label: 'Commitments' },
+  { href: '/dashboard/ideas',        icon: Lightbulb,       label: 'Idea Vault' },
   { href: '/dashboard/clients',      icon: Users,           label: 'Lead Sniper CRM' },
   { href: '/dashboard/automations',  icon: Zap,             label: 'Automations' },
   { href: '/dashboard/integrations', icon: Plug,            label: 'Integrations' },
@@ -25,6 +27,13 @@ export default function DashboardLayout({ children, user }: { children: React.Re
   const [open, setOpen] = useState(false)
 
   const logout = () => { clearToken(); router.push('/auth/login') }
+
+  const getTrialDaysLeft = () => {
+    if (!user?.trial_ends_at || user.plan_status !== 'trial') return null;
+    const diff = new Date(user.trial_ends_at).getTime() - new Date().getTime();
+    return Math.max(0, Math.ceil(diff / (1000 * 3600 * 24)));
+  };
+  const trialDays = getTrialDaysLeft();
 
   const Sidebar = ({ mobile = false }) => (
     <aside className={clsx(
@@ -63,16 +72,32 @@ export default function DashboardLayout({ children, user }: { children: React.Re
 
       {/* Usage bar */}
       {user && (
-        <div className="px-4 py-3 mx-3 mb-3 bg-white rounded-xl border border-zinc-200 shadow-sm">
-          <div className="flex justify-between items-center mb-1.5">
-            <span className="text-zinc-500 text-xs font-semibold">Tasks used</span>
-            <span className="text-zinc-900 text-xs font-bold">{user.tasks_used}/{user.tasks_limit === 999999 ? '∞' : user.tasks_limit}</span>
+        <div className="px-4 py-3 mx-3 mb-3 bg-white rounded-xl border border-zinc-200 shadow-sm space-y-3">
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-zinc-500 text-xs font-semibold">Tasks Used</span>
+              <span className="text-zinc-900 text-xs font-bold">{user.tasks_used}/{user.tasks_limit === 999999 ? '∞' : user.tasks_limit}</span>
+            </div>
+            <div className="w-full bg-zinc-100 rounded-full h-1.5">
+              <div className={clsx('h-1.5 rounded-full transition-all', user.tasks_used / user.tasks_limit > 0.9 ? 'bg-red-500' : 'bg-zinc-900')}
+                style={{ width: `${Math.min(100, (user.tasks_used / (user.tasks_limit || 50)) * 100)}%` }} />
+            </div>
           </div>
-          <div className="w-full bg-zinc-100 rounded-full h-1.5">
-            <div className={clsx('h-1.5 rounded-full transition-all', user.tasks_used / user.tasks_limit > 0.9 ? 'bg-red-500' : 'bg-zinc-900')}
-              style={{ width: `${Math.min(100, (user.tasks_used / (user.tasks_limit || 50)) * 100)}%` }} />
-          </div>
-          <p className="text-zinc-500 text-xs mt-1.5 font-medium capitalize">{user.plan} plan</p>
+          
+          {trialDays !== null && (
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-zinc-500 text-xs font-semibold">Trial Status</span>
+                <span className="text-zinc-900 text-xs font-bold">{trialDays} days left</span>
+              </div>
+              <div className="w-full bg-zinc-100 rounded-full h-1.5">
+                <div className="h-1.5 rounded-full bg-orange-500 transition-all"
+                  style={{ width: `${Math.min(100, (trialDays / 7) * 100)}%` }} />
+              </div>
+            </div>
+          )}
+          
+          <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-wider">{user.plan} plan</p>
         </div>
       )}
 

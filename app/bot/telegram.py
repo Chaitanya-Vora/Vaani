@@ -3,6 +3,7 @@ Telegram Bot handler using python-telegram-bot (PTB v20 async).
 Great for development/testing before WhatsApp approval.
 """
 
+from __future__ import annotations
 import structlog
 from telegram import Update, Bot
 from telegram.ext import (

@@ -13,7 +13,7 @@ export default function CommitmentsPage() {
 
   useEffect(() => {
     Promise.all([api.dashboard.me(), api.dashboard.commitments()])
-      .then(([u, c]) => { setUser(u); setCommitments(c); })
+      .then(([u, c]) => { setUser(u); setCommitments(c as any[]); })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
@@ -26,34 +26,34 @@ export default function CommitmentsPage() {
   }
 
   const itemFramer = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
   }
 
   return (
     <DashboardShell user={user}>
-      <div className="mb-6">
-        <h1 className="font-display font-800 text-2xl text-text-primary mb-1 tracking-tight">Active Commitments</h1>
-        <p className="text-text-secondary text-sm">
-          Everything you promised via Voice. Tracked dynamically by Celery.
+      <div className="mb-8">
+        <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Active Promises</h1>
+        <p className="text-zinc-500 font-medium text-base">
+          Promises made to your clients via voice. Tracked proactively by our backend.
         </p>
       </div>
 
-      <motion.div variants={containerFramer} initial="hidden" animate="show" className="space-y-4">
+      <motion.div variants={containerFramer} initial="hidden" animate="show" className="space-y-4 max-w-4xl">
         {commitments.length === 0 && (
-          <div className="text-center py-20 px-4 bg-bg-surface border border-bg-border rounded-2xl">
-            <Target className="w-8 h-8 text-text-muted mx-auto mb-3 opacity-30" />
-            <p className="text-text-muted text-sm font-500">No active commitments found.</p>
-            <p className="text-text-muted text-xs mt-1">Send Vaani a voice note with a deadline.</p>
+          <div className="text-center py-24 px-4 bg-zinc-50 border border-zinc-200 rounded-[2rem]">
+            <Target className="w-10 h-10 text-zinc-300 mx-auto mb-4" />
+            <p className="text-zinc-600 font-bold text-base">No active commitments executing.</p>
+            <p className="text-zinc-400 font-medium text-sm mt-1">Send Vaani a voice note with a deadline context (e.g. "Remind me to call him at 4PM").</p>
           </div>
         )}
         {commitments.map(c => (
           <motion.div variants={itemFramer} key={c.id}>
-            <Card className="flex items-center gap-4 hover:border-brand/30 transition-colors cursor-pointer group">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                c.status === 'completed' ? 'bg-success/10 text-success' : 
-                c.status === 'missed' ? 'bg-danger/10 text-danger' : 
-                'bg-brand/10 text-brand'
+            <Card className="flex items-center gap-5 hover:border-zinc-300 bg-white border-zinc-200 shadow-sm p-5 rounded-2xl transition-all cursor-pointer group">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border shadow-sm ${
+                c.status === 'completed' ? 'bg-zinc-100 text-green-500 border-zinc-200' : 
+                c.status === 'missed' ? 'bg-red-50 text-red-500 border-red-100' : 
+                'bg-brand/10 text-brand border-brand/20'
               }`}>
                 {c.status === 'completed' ? <CheckCircle className="w-5 h-5" /> : 
                  c.status === 'missed' ? <Clock className="w-5 h-5" /> : 
@@ -61,21 +61,21 @@ export default function CommitmentsPage() {
               </div>
               
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="font-display font-700 text-text-primary text-sm truncate">{c.desc}</p>
-                  <span className="text-[10px] uppercase tracking-wider font-700 text-text-muted bg-bg-elevated px-2 py-0.5 rounded-full border border-bg-border">{c.type}</span>
+                <div className="flex items-center gap-3 mb-1.5">
+                  <p className="font-display font-800 text-zinc-900 text-lg tracking-tight truncate">{c.desc}</p>
+                  <span className="text-[9px] uppercase tracking-widest font-bold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-md border border-zinc-200">{c.type}</span>
                 </div>
-                <p className="text-text-secondary text-xs truncate">To: {c.recipient}</p>
+                <p className="text-zinc-500 font-medium text-sm truncate">Target Recipient: <span className="text-zinc-900 font-bold">{c.recipient}</span></p>
               </div>
 
               <div className="text-right flex-shrink-0 flex flex-col items-end">
                 <Badge color={
                   c.status === 'completed' ? 'success' : 
                   c.status === 'missed' ? 'danger' : 'warning'
-                } className="mb-1 uppercase tracking-wider text-[10px]">
-                  {c.status}
+                } className="mb-2 uppercase tracking-widest text-[9px] font-bold px-2 py-1">
+                  {c.status === 'missed' ? 'Breached' : c.status}
                 </Badge>
-                <p className="text-text-muted text-[11px] font-mono">
+                <p className="text-zinc-400 text-xs font-mono font-bold bg-zinc-50 px-2 py-1 border border-zinc-100 rounded-md">
                   {new Date(c.due).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
