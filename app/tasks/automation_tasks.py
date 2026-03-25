@@ -128,3 +128,87 @@ async def _trigger_webhook_async(automation_id: str, payload: dict):
             await send_text_message(user.whatsapp_number, msg)
 
         await db.commit()
+
+
+@celery_app.task
+def send_daily_briefing(user_id: str = None):
+    """Proactive Daily Morning Briefing sent via WhatsApp/Telegram."""
+    asyncio.get_event_loop().run_until_complete(_send_daily_briefing_async(user_id))
+
+async def _send_daily_briefing_async(user_id: str = None):
+    from app.database import AsyncSessionLocal
+    from app.models import User, AITask, IntentType, TaskStatus
+    from app.ai.intent import execute_with_ai
+    from sqlalchemy import select, func
+    from datetime import datetime, timedelta, timezone
+
+    now = datetime.now(timezone.utc)
+    yesterday_date = now - timedelta(days=1)
+
+    async with AsyncSessionLocal() as db:
+        query = select(User).where(User.is_active == True)
+        if user_id:
+            query = query.where(User.id == user_id)
+            
+        users = (await db.execute(query)).scalars().all()
+
+        for user in users:
+            try:
+                if not user.whatsapp_number and not user.telegram_chat_id:
+                    continue
+                
+                # Fetch pending commitments
+                result_commitments = await db.execute(
+                    select(AITask).where(
+                        AITask.user_id == user.id,
+                        AITask.intent == IntentType.COMMITMENT_CAPTURE,
+                        AITask.status == TaskStatus.PENDING
+                    ).order_by(AITask.created_at.desc()).limit(10)
+                )
+                commitments = result_commitments.scalars().all()
+                commits_text = "\n".join([f"- {c.result_data.get('entities', {}).get('client_name', 'Team')}: {c.input_text}" for c in commitments])
+                if not commits_text:
+                    commits_text = "No pending commitments."
+
+                # Fetch yesterday's tasks completed (Utility/Praise mechanism)
+                result_yesterday = await db.execute(
+                    select(func.count()).select_from(AITask).where(
+                        AITask.user_id == user.id,
+                        AITask.created_at >= yesterday_date
+                    )
+                )
+                tasks_yesterday = result_yesterday.scalar() or 0
+
+                briefing_sys = f"""You are Vaani, a proactive Chief of Staff.
+It is morning. Write a short WhatsApp morning briefing for {user.name or 'the founder'}.
+Always be very warm, precise, and professional.
+
+Context to use:
+- Yesterday they executed {tasks_yesterday} operations with you. If > 5, praise them heavily. If 0, gently offer your services (e.g. drafting emails, logging expenses).
+- Pending Commitments Today:
+{commits_text}
+
+Rules:
+1. Keep it under 100 words. Use bullet points for readability.
+2. If there are >3 commitments, add exactly this line at the end: "If you are overwhelmed today, just reply *Push all* and I will automatically reschedule these to tomorrow."
+3. Respond in their preferred language ({user.language_pref or 'en'}), mixing professional Hindi and English naturally if appropriate."""
+
+                ai_result = await execute_with_ai(
+                    instruction="Draft my proactive morning briefing now based on my system context.",
+                    context={"user_context": {"name": user.name, "business_name": user.business_name}, "language": user.language_pref or "en"},
+                    user_plan=getattr(getattr(user, "subscription", None), "plan", "starter")
+                )
+
+                final_msg = ai_result.get("output", "Good morning! Ready to optimize your day.")
+                
+                # Send Native Payload
+                if user.whatsapp_number:
+                    from app.bot.whatsapp import send_text_message as wa_send
+                    await wa_send(user.whatsapp_number, final_msg)
+                elif user.telegram_chat_id:
+                    from app.bot.telegram import send_telegram_message as tg_send
+                    await tg_send(user.telegram_chat_id, final_msg)
+
+            except Exception as e:
+                log.error("daily_briefing.error", user=str(user.id), error=str(e))
+

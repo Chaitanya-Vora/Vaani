@@ -122,10 +122,10 @@ function DashboardContent() {
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            { label: 'Active Integrations', value: user?.connected_integrations?.length || 0, icon: Plug, sub: 'Connected Apps' },
-            { label: 'WhatsApp Messages', value: stats?.messages_30d || 0, icon: Zap, sub: 'Last 30 days' },
-            { label: 'AI Actions Processed', value: totalActions, icon: CheckSquare, sub: 'Used this month' },
-            { label: 'CRM Leads Extracted', value: stats?.clients || 0, icon: Users, sub: 'Auto-captured' },
+            { label: 'AI Actions Processed', value: totalActions, icon: CheckSquare, sub: 'Operations completed' },
+            { label: 'Hours of Work Saved', value: Math.round(Number(totalActions) * 0.25) || 0, icon: Sparkles, sub: 'Assumes 15m per task' },
+            { label: 'CRM Leads Extracted', value: stats?.clients || 0, icon: Users, sub: 'Auto-captured from voice' },
+            { label: 'Pending Commitments', value: commitments.filter(c => c.status !== 'completed').length || 0, icon: Target, sub: 'Actively tracking' },
           ].map((stat, i) => (
             <motion.div variants={itemFramer} key={i}>
               <div className="bg-white border border-zinc-200 rounded-[1.5rem] p-5 shadow-sm hover:shadow-md transition-shadow">

@@ -59,6 +59,13 @@ const INTEGRATIONS = [
     connectUrl: () => '#',
     comingSoon: true,
   },
+  {
+    id: 'universal_hub', name: 'Make & Zapier (800+ Apps)', icon: '⚡',
+    desc: 'Gain instant access to 800+ applications. Use Vaani as your universal execution endpoint.',
+    category: 'Universal', required: false,
+    connectUrl: () => 'https://make.com',
+    comingSoon: false,
+  },
 ]
 
 export default function IntegrationsPage() {
@@ -90,7 +97,7 @@ export default function IntegrationsPage() {
   return (
     <DashboardShell user={user}>
       <div className="mb-8">
-        <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Integrations</h1>
+        <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Integrations & App Store</h1>
         <p className="text-zinc-500 text-base font-medium">
           {connected.length} of {INTEGRATIONS.filter(i => !i.comingSoon).length} enterprise modules securely connected
         </p>

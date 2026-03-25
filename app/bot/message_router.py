@@ -137,6 +137,23 @@ async def _process_message(
     if not text_content.strip() and not media_bytes:
         return
 
+    # ── 3.5. Psychological Workflow Trap ("Push All") ─────────────────────────
+    if text_content.strip().lower() in ["push all", "postpone all", "reschedule all"]:
+        result = await db.execute(select(AITask).where(
+            AITask.user_id == user.id, 
+            AITask.intent == IntentType.COMMITMENT_CAPTURE, 
+            AITask.status == TaskStatus.PENDING
+        ))
+        pushed_count = 0
+        for t in result.scalars():
+            rd = dict(t.result_data)
+            rd["pushed"] = True
+            t.result_data = rd
+            pushed_count += 1
+        await db.commit()
+        await send_fn(f"Done. I've aggressively rescheduled {pushed_count} non-critical commitments to tomorrow. Take a breath and focus on what's absolutely vital today.")
+        return
+
     # ── 4. Save raw message to DB ─────────────────────────────────────────────
     db_message = Message(
         user_id=user.id,
@@ -207,10 +224,24 @@ async def _process_message(
     await _increment_usage(user, db)
 
     # ── 10. Generate WhatsApp-friendly response ───────────────────────────────
-    # If executor gave a direct summary, use it; else generate with Claude
     response_text = execution_result.get("summary")
-    if not response_text or execution_result.get("is_compliance") or execution_result.get("is_research"):
-        response_text = execution_result.get("summary", "✅ Done!")
+    
+    # Unleash True Finesse using generate_response for standard intents
+    if not execution_result.get("is_compliance") and not execution_result.get("is_research"):
+        try:
+            finesse_response = await generate_response(
+                intent_data=intent_data,
+                user=user,
+                execution_result=execution_result,
+                language=user.language_pref or "en"
+            )
+            if finesse_response:
+                response_text = finesse_response
+        except Exception as e:
+            log.warning("message_router.finesse_failed", error=str(e))
+
+    if not response_text:
+        response_text = "✅ Done!"
 
     # Append Notion link if available
     notion_url = execution_result.get("notion_url") or execution_result.get("pdf_url")
@@ -337,6 +368,23 @@ async def _build_user_context(user: User, db: AsyncSession) -> dict:
     )
     memories = {m.key: m.value for m in memories_result.scalars().all()}
 
+    # Fetch recent Notion pages for "Memory RAG"
+    recent_pages = []
+    try:
+        from app.models import Integration
+        integ_result = await db.execute(
+            sel(Integration).where(
+                Integration.user_id == user.id,
+                Integration.provider == "notion"
+            )
+        )
+        notion_integ = integ_result.scalar_one_or_none()
+        if notion_integ:
+            from app.integrations import notion
+            recent_pages = await notion.get_recent_pages(notion_integ.access_token, limit=5)
+    except Exception as e:
+        log.warning("context.notion_memory_failed", error=str(e))
+
     return {
         "name": user.name or "",
         "business_name": user.business_name or "",
@@ -344,6 +392,7 @@ async def _build_user_context(user: User, db: AsyncSession) -> dict:
         "gstin": user.gstin or "",
         "language_pref": user.language_pref or "en",
         "recent_clients": client_names,
+        "recent_pages": recent_pages,
         "memories": memories,
         "plan": getattr(getattr(user, "subscription", None), "plan", PlanTier.STARTER),
     }

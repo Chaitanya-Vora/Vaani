@@ -59,3 +59,11 @@ async def delete_automation(automation_id: str, user=Depends(get_current_user), 
         raise HTTPException(status_code=404)
     await db.delete(auto)
     return {"status": "deleted"}
+
+@router.post("/trigger-briefing")
+async def trigger_daily_briefing(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """Manually invoke the Proactive Morning Briefing for live demos (FastAPI Background Task)."""
+    from app.tasks.automation_tasks import _send_daily_briefing_async
+    import asyncio
+    asyncio.create_task(_send_daily_briefing_async(str(user.id)))
+    return {"status": "Briefing triggered and routing to your phone"}

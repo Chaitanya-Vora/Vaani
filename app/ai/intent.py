@@ -6,9 +6,11 @@ Uses Haiku for fast classification, Sonnet for complex drafting tasks.
 from __future__ import annotations
 import json
 import time
+import re
 from typing import Optional
 
-import anthropic
+# ── TEMPORARY (Claude → Gemini swap until Anthropic card is added) ──────────
+# To revert: restore the 3 lines below and swap _call_gemini back to claude.messages.create
 import google.generativeai as genai
 import structlog
 
@@ -17,9 +19,59 @@ from app.models import IntentType, PlanTier
 
 log = structlog.get_logger(__name__)
 
-claude = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 if settings.GOOGLE_API_KEY:
     genai.configure(api_key=settings.GOOGLE_API_KEY)
+
+async def _call_gemini(system: str, prompt: str, max_tokens: int = 2000) -> str:
+    """Unified Gemini 2.0 Flash call — replaces Claude temporarily."""
+    model = genai.GenerativeModel("gemini-2.0-flash", system_instruction=system)
+    response = await model.generate_content_async(
+        prompt,
+        generation_config=genai.GenerationConfig(max_output_tokens=max_tokens)
+    )
+    return response.text.strip()
+
+# ── Security Middleware ────────────────────────────────────────────────────────
+
+class SecurityMiddleware:
+    """Zero-cost local regex engine for PII redaction and prompt safety."""
+    
+    # Matches ABCDE1234F
+    PAN_REGEX = re.compile(r'\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b', re.IGNORECASE)
+    # Matches 12-digit Aadhaar (e.g. 1234 5678 9012)
+    AADHAAR_REGEX = re.compile(r'\b\d{4}\s?\d{4}\s?\d{4}\b')
+    # Matches 16-digit CC
+    CC_REGEX = re.compile(r'\b(?:\d{4}[ -]?){3}\d{4}\b')
+    
+    JAILBREAK_TERMS = [
+        "ignore previous instructions",
+        "forget all instructions",
+        "system prompt",
+        "you are no longer",
+        "ignore all previous",
+        "bypass rules"
+    ]
+
+    @classmethod
+    def redact_pii(cls, text: str) -> str:
+        if not text:
+            return text
+        text = cls.PAN_REGEX.sub("[REDACTED_PAN]", text)
+        text = cls.AADHAAR_REGEX.sub("[REDACTED_AADHAAR]", text)
+        text = cls.CC_REGEX.sub("[REDACTED_CARD]", text)
+        return text
+
+    @classmethod
+    def check_safety(cls, text: str) -> bool:
+        """Return False if text contains jailbreak vectors."""
+        if not text:
+            return True
+        text_lower = text.lower()
+        for term in cls.JAILBREAK_TERMS:
+            if term in text_lower:
+                return False
+        return True
+
 
 # ── System Prompts ─────────────────────────────────────────────────────────────
 
@@ -112,6 +164,25 @@ async def classify_intent(
     """
     start = time.perf_counter()
 
+    # 1. Zero-Cost Security Gate (Prompt Injection Defense)
+    if text and not SecurityMiddleware.check_safety(text):
+        log.warning("intent.security_blocked", reason="Jailbreak attempt detected")
+        return {
+            "intent": "MALICIOUS_INTENT",
+            "confidence": 100,
+            "entities": {},
+            "urgency": "low",
+            "original_text": "[TEXT BLOCKED BY SECURITY GUARDRAIL]",
+            "response_hint": "Policy violation block."
+        }
+        
+    # 2. Zero-Cost Data Privacy (PII Auto-Redaction)
+    if text:
+        original_unredacted = text
+        text = SecurityMiddleware.redact_pii(text)
+        if text != original_unredacted:
+            log.info("intent.pii_redacted", action="Masked sensitive user numbers")
+
     # Build context string
     context_str = _build_context_string(user_context)
 
@@ -187,13 +258,7 @@ If there's a Notion URL, include it.
 If it's in Hindi/mixed, respond in the same style."""
 
     try:
-        response = await claude.messages.create(
-            model=settings.CLAUDE_FAST_MODEL,
-            max_tokens=300,
-            system=system,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return response.content[0].text.strip()
+        return await _call_gemini(system, prompt, max_tokens=300)
     except Exception as e:
         log.error("response_gen.error", error=str(e))
         return "✅ Done! Saved to your Notion workspace."
@@ -216,16 +281,11 @@ async def execute_with_ai(
     )
 
     try:
-        response = await claude.messages.create(
-            model=model,
-            max_tokens=2000,
-            system=system,
-            messages=[{"role": "user", "content": instruction}],
-        )
+        output = await _call_gemini(system, instruction, max_tokens=2000)
         return {
-            "output": response.content[0].text.strip(),
-            "tokens": response.usage.input_tokens + response.usage.output_tokens,
-            "model": model,
+            "output": output,
+            "tokens": 0,
+            "model": "gemini-2.0-flash",
         }
     except Exception as e:
         log.error("ai_execute.error", error=str(e))
@@ -269,13 +329,7 @@ async def answer_compliance_query(
         prompt += "\n\nAnswer in Hindi (Devanagari) mixed with English technical terms."
 
     try:
-        response = await claude.messages.create(
-            model=settings.CLAUDE_SMART_MODEL,
-            max_tokens=800,
-            system=COMPLIANCE_SYSTEM,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return response.content[0].text.strip()
+        return await _call_gemini(COMPLIANCE_SYSTEM, prompt, max_tokens=800)
     except Exception as e:
         log.error("compliance.error", error=str(e))
         return "Unable to process your compliance query right now. Please try again."
@@ -295,6 +349,8 @@ def _build_context_string(user_context: dict) -> str:
         parts.append(f"Language: {user_context['language_pref']}")
     if user_context.get("recent_clients"):
         parts.append(f"Recent clients: {', '.join(user_context['recent_clients'][:5])}")
+    if user_context.get("recent_pages"):
+        parts.append(f"Recent active Notion projects/docs: {', '.join(user_context['recent_pages'])}")
     return "; ".join(parts) if parts else "New user, no context yet"
 
 

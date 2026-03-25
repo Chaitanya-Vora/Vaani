@@ -456,15 +456,12 @@ Return JSON: {{title, content, word_count, hashtags (if social)}}""",
     notion_url = None
     notion_integration = _get_integration(user, "notion")
     if notion_integration:
-        notion_url = await notion.create_note_page(
+        notion_url = await notion.create_content_entry(
             access_token=notion_integration.access_token,
             workspace_meta=notion_integration.metadata_,
             title=content_data.get("title", content_type.title()),
-            summary=content_data.get("content", ""),
-            key_points=[],
-            action_items=[],
-            tags=[content_type.replace(" ", "_"), "content"],
-            source_text=text,
+            content_body=content_data.get("content", ""),
+            content_type=content_type,
         )
 
     return {
