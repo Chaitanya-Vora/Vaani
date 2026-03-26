@@ -60,13 +60,11 @@ export default function CommitmentsPage() {
                  <Target className="w-5 h-5" />}
               </div>
               
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-1.5">
-                  <p className="font-display font-800 text-zinc-900 text-lg tracking-tight truncate">{c.desc}</p>
-                  <span className="text-[9px] uppercase tracking-widest font-bold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-md border border-zinc-200">{c.type}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1.5">
+                  <p className="font-display font-800 text-zinc-900 text-lg tracking-tight break-words whitespace-normal leading-tight">{c.desc}</p>
+                  <span className="w-fit text-[9px] uppercase tracking-widest font-bold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-md border border-zinc-200">{c.type}</span>
                 </div>
-                <p className="text-zinc-500 font-medium text-sm truncate">Target Recipient: <span className="text-zinc-900 font-bold">{c.recipient}</span></p>
-              </div>
+                <p className="text-zinc-500 font-medium text-sm break-words whitespace-normal leading-relaxed">Target Recipient: <span className="text-zinc-900 font-bold">{c.recipient}</span></p>
 
               <div className="text-right flex-shrink-0 flex flex-col items-end">
                 <Badge color={

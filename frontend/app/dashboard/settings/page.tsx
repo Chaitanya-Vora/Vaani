@@ -49,7 +49,7 @@ export default function SettingsPage() {
         <Card className="bg-white border-zinc-200 shadow-sm p-8 rounded-[2rem]">
           <h3 className="font-display font-800 text-xl text-zinc-900 mb-6 tracking-tight">Executive Profile</h3>
           <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Input label="Full Name" value={form.name} onChange={set('name')} placeholder="Rajesh Mehta" />
               <Input label="Company Name" value={form.business_name} onChange={set('business_name')} placeholder="Mehta & Co." />
             </div>

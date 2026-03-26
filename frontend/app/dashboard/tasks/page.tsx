@@ -63,7 +63,7 @@ export default function TasksPage() {
               </div>
               
               <div className="flex-1 min-w-0">
-                <p className={`font-medium sm:text-lg truncate ${t.status === 'completed' ? 'text-zinc-400 line-through' : 'text-zinc-800'}`}>
+                <p className={`font-medium text-[15px] sm:text-lg break-words whitespace-normal ${t.status === 'completed' ? 'text-zinc-400 line-through' : 'text-zinc-800'}`}>
                   {t.description}
                 </p>
                 {t.due_date && (

@@ -32,14 +32,14 @@ export default function ClientsPage() {
 
   return (
     <DashboardShell user={user}>
-      <div className="mb-8 flex justify-between items-end">
+      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-5">
         <div>
-          <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Lead Sniper CRM</h1>
-          <p className="text-zinc-500 font-medium text-base">
+          <h1 className="font-display font-800 text-3xl text-zinc-900 mb-1 tracking-tight">Lead Sniper CRM</h1>
+          <p className="text-zinc-500 font-medium text-sm sm:text-base">
             Forward a VCF card or raw voice note on WhatsApp to auto-inject leads here.
           </p>
         </div>
-        <button className="bg-zinc-900 hover:bg-zinc-800 text-white text-sm font-display font-700 px-6 py-2.5 rounded-full transition-all shadow-sm">
+        <button className="bg-zinc-900 hover:bg-zinc-800 text-white text-sm font-display font-700 px-6 py-2.5 rounded-full transition-all shadow-sm w-full sm:w-auto">
           + Add Lead Manually
         </button>
       </div>

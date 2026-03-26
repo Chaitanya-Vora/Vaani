@@ -120,7 +120,7 @@ function DashboardContent() {
 
       <motion.div variants={containerFramer} initial="hidden" animate="show">
         {/* Stats grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
           {[
             { label: 'AI Actions Processed', value: totalActions, icon: CheckSquare, sub: 'Operations completed' },
             { label: 'Hours of Work Saved', value: Math.round(Number(totalActions) * 0.25) || 0, icon: Sparkles, sub: 'Assumes 15m per task' },
@@ -128,15 +128,15 @@ function DashboardContent() {
             { label: 'Pending Commitments', value: commitments.filter(c => c.status !== 'completed').length || 0, icon: Target, sub: 'Actively tracking' },
           ].map((stat, i) => (
             <motion.div variants={itemFramer} key={i}>
-              <div className="bg-white border border-zinc-200 rounded-[1.5rem] p-5 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center">
+              <div className="bg-white border border-zinc-200 rounded-[1.5rem] p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow h-full">
+                <div className="flex items-center gap-2 sm:gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
                     <stat.icon className="w-4 h-4 text-zinc-700" />
                   </div>
-                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-wide">{stat.label}</span>
+                  <span className="text-[9px] sm:text-xs font-bold text-zinc-500 uppercase tracking-wide leading-tight">{stat.label}</span>
                 </div>
-                <div className="text-2xl font-display font-800 text-zinc-900 tracking-tight">{stat.value}</div>
-                <div className="text-xs text-zinc-400 font-medium mt-1">{stat.sub}</div>
+                <div className="text-xl sm:text-2xl font-display font-800 text-zinc-900 tracking-tight">{stat.value}</div>
+                <div className="text-[10px] text-zinc-400 font-medium mt-1 leading-tight">{stat.sub}</div>
               </div>
             </motion.div>
           ))}
