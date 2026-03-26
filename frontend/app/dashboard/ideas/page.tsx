@@ -14,7 +14,7 @@ export default function IdeasPage() {
   useEffect(() => {
     Promise.all([
       api.dashboard.me(),
-      api.dashboard.ideas ? api.dashboard.ideas() : Promise.resolve([]) // Fallback if API client isn't updated yet
+      (api.dashboard as any).ideas ? (api.dashboard as any).ideas() : Promise.resolve([]) // Fallback if API client isn't updated yet
     ])
       .then(([u, i]) => { setUser(u); setIdeas(i); })
       .catch(console.error)
