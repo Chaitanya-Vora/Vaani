@@ -14,7 +14,7 @@ export default function TasksPage() {
   useEffect(() => {
     Promise.all([
       api.dashboard.me(),
-      api.dashboard.tasks ? api.dashboard.tasks() : Promise.resolve([])
+      (api.dashboard as any).tasks ? (api.dashboard as any).tasks() : Promise.resolve([]) // Fallback if API client isn't updated yet
     ])
       .then(([u, t]) => { setUser(u); setTasks(t); })
       .catch(console.error)
