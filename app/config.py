@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     # ── App ───────────────────────────────────────────────────────────────────
     APP_NAME: str = "Vaani"
     APP_VERSION: str = "1.0.0"
-    ENV: str = "development"
-    FRONTEND_URL: str = "http://localhost:3000"
+    ENV: str = "production"
+    FRONTEND_URL: str = "https://vaani-nine.vercel.app"
     SECRET_KEY: str = "change-me-in-production-use-openssl-rand-hex-32"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 43200  # 30 days
@@ -47,11 +47,11 @@ class Settings(BaseSettings):
     # ── Integrations ──────────────────────────────────────────────────────────
     NOTION_CLIENT_ID: str = ""
     NOTION_CLIENT_SECRET: str = ""
-    NOTION_REDIRECT_URI: str = "https://vaani.app/api/auth/notion/callback"
+    NOTION_REDIRECT_URI: str = "https://vaani-production-01ed.up.railway.app/api/auth/notion/callback"
 
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
-    GOOGLE_REDIRECT_URI: str = "https://vaani.app/api/auth/google/callback"
+    GOOGLE_REDIRECT_URI: str = "https://vaani-production-01ed.up.railway.app/api/auth/google/callback"
 
     ZOHO_CLIENT_ID: str = ""
     ZOHO_CLIENT_SECRET: str = ""
