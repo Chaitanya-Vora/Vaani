@@ -216,7 +216,7 @@ async def notion_callback(code: str, state: Optional[str] = None, db: AsyncSessi
     )
 
     log.info("notion.connected", user_id=user_id, workspace=workspace_name, compliance_entries=count)
-    return RedirectResponse(f"{settings.ALLOWED_ORIGINS[0]}/dashboard?notion=connected")
+    return RedirectResponse(f"{settings.FRONTEND_URL}/dashboard?notion=connected")
 
 
 # ── Google OAuth ──────────────────────────────────────────────────────────────
@@ -289,4 +289,4 @@ async def google_callback(
 
     await db.flush()
     log.info("google.connected", user_id=user_id)
-    return RedirectResponse(f"{settings.ALLOWED_ORIGINS[0]}/dashboard?google=connected")
+    return RedirectResponse(f"{settings.FRONTEND_URL}/dashboard?google=connected")

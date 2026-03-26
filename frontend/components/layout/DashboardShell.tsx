@@ -8,6 +8,7 @@ import {
   LogOut, Menu, X, MessageCircle, ChevronRight,
   Target, Zap as ZapIcon, LayoutPanelLeft, Lightbulb, CheckCircle
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { clearToken } from '@/lib/api'
 
 const NAV = [
@@ -130,9 +131,17 @@ export default function DashboardLayout({ children, user }: { children: React.Re
 
       {/* Mobile overlay */}
       {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-72 z-10"><Sidebar mobile /></div>
+        <div className="fixed inset-0 z-[100] lg:hidden">
+          <div className="absolute inset-0 bg-zinc-900/40 backdrop-blur-sm transition-opacity" onClick={() => setOpen(false)} />
+          <motion.div 
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="absolute left-0 top-0 bottom-0 w-[280px] z-10 shadow-2xl"
+          >
+            <Sidebar mobile />
+          </motion.div>
         </div>
       )}
 

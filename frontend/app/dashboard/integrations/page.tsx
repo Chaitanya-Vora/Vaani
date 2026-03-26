@@ -116,7 +116,7 @@ export default function IntegrationsPage() {
       {categories.map(cat => (
         <div key={cat} className="mb-10">
           <p className="text-zinc-400 text-xs font-display font-800 uppercase tracking-widest mb-4 pl-1">{cat}</p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {INTEGRATIONS.filter(i => i.category === cat).map(intg => {
               const conn = isConnected(intg.id)
               return (

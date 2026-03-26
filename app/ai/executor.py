@@ -190,28 +190,49 @@ async def _handle_create_task(text, entities, user, language):
     due_date = entities.get("due_date")
     client = entities.get("client_name")
 
+    import asyncio
+
     # Google Tasks
     google_integration = _get_integration(user, "google_calendar")
-    task_id = None
+    
+    # Notion task
+    notion_integration = _get_integration(user, "notion")
+
+    # Define tasks
+    tasks = []
+    
     if google_integration:
-        task_id = await google_calendar.create_task(
+        tasks.append(google_calendar.create_task(
             access_token=google_integration.access_token,
             title=task_title,
             due_date=due_date,
             notes=f"Client: {client}" if client else None,
-        )
+        ))
+    else:
+        tasks.append(asyncio.sleep(0, result=None)) # Dummy
 
-    # Notion task
-    notion_url = None
-    notion_integration = _get_integration(user, "notion")
     if notion_integration:
-        notion_url = await notion.create_task_entry(
+        tasks.append(notion.create_task_entry(
             access_token=notion_integration.access_token,
             workspace_meta=notion_integration.metadata_,
             title=task_title,
             due_date=due_date,
             client=client,
-        )
+        ))
+    else:
+        tasks.append(asyncio.sleep(0, result=None)) # Dummy
+
+    # Run in parallel
+    google_res, notion_url = await asyncio.gather(*tasks, return_exceptions=True)
+    
+    task_id = google_res if not isinstance(google_res, Exception) else None
+    notion_url = notion_url if not isinstance(notion_url, Exception) else None
+
+    if isinstance(google_res, Exception):
+        log.warning("executor.google_task_failed", error=str(google_res))
+    if isinstance(notion_url, Exception) and notion_integration:
+        log.warning("executor.notion_task_failed", error=str(notion_url))
+        notion_url = None
 
     due_str = f" by {due_date}" if due_date else ""
     client_str = f" for {client}" if client else ""
@@ -273,25 +294,38 @@ Return JSON: {{title, date, attendees: [], discussion_points: [], decisions: [],
     except Exception:
         meeting_data = {"title": "Meeting Notes", "discussion_points": [text], "action_items": []}
 
-    # Save to Notion
-    notion_url = None
+    import asyncio
+
+    # 1. Start Notion page creation
     notion_integration = _get_integration(user, "notion")
+    google_integration = _get_integration(user, "google_calendar")
+    
+    integ_tasks = []
+    
     if notion_integration:
-        notion_url = await notion.create_meeting_page(
+        integ_tasks.append(notion.create_meeting_page(
             access_token=notion_integration.access_token,
             workspace_meta=notion_integration.metadata_,
             meeting_data=meeting_data,
-        )
+        ))
+    else:
+        integ_tasks.append(asyncio.sleep(0, result=None))
 
-    # Create tasks for action items
-    google_integration = _get_integration(user, "google_calendar")
+    # 2. Add Google Tasks to the same gather
     if google_integration and meeting_data.get("action_items"):
         for item in meeting_data["action_items"][:5]:  # cap at 5
-            await google_calendar.create_task(
+            integ_tasks.append(google_calendar.create_task(
                 access_token=google_integration.access_token,
                 title=item.get("task", ""),
                 due_date=item.get("due_date"),
-            )
+            ))
+
+    # Run everything in parallel
+    results = await asyncio.gather(*integ_tasks, return_exceptions=True)
+    
+    notion_url = results[0] if not isinstance(results[0], Exception) else None
+    if isinstance(results[0], Exception) and notion_integration:
+        log.warning("executor.meeting_notion_failed", error=str(results[0]))
 
     action_count = len(meeting_data.get("action_items", []))
     return {
@@ -338,28 +372,44 @@ async def _handle_update_crm(text, entities, user, db, language):
                 pass
         await db.flush()
 
-    # Notion CRM update
-    notion_url = None
+    import asyncio
+
+    # Parallelize integrations
     notion_integration = _get_integration(user, "notion")
+    zoho_integration = _get_integration(user, "zoho_crm")
+    
+    integ_tasks = []
+    
     if notion_integration and client_name:
-        notion_url = await notion.update_crm_entry(
+        integ_tasks.append(notion.update_crm_entry(
             access_token=notion_integration.access_token,
             workspace_meta=notion_integration.metadata_,
             client_name=client_name,
             interaction_note=description,
             follow_up_date=follow_up,
             notion_page_id=getattr(client_obj, "notion_page_id", None) if client_obj else None,
-        )
+        ))
+    else:
+        integ_tasks.append(asyncio.sleep(0, result=None))
 
-    # Zoho CRM if connected
-    zoho_integration = _get_integration(user, "zoho_crm")
     if zoho_integration and client_name:
-        await zoho_crm.log_activity(
+        integ_tasks.append(zoho_crm.log_activity(
             access_token=zoho_integration.access_token,
             contact_name=client_name,
             note=description,
             follow_up_date=follow_up,
-        )
+        ))
+    else:
+        integ_tasks.append(asyncio.sleep(0, result=None))
+
+    # Run in parallel
+    notion_res, zoho_res = await asyncio.gather(*integ_tasks, return_exceptions=True)
+    
+    notion_url = notion_res if not isinstance(notion_res, Exception) else None
+    if isinstance(notion_res, Exception) and notion_integration:
+        log.warning("executor.notion_crm_failed", error=str(notion_res))
+    if isinstance(zoho_res, Exception) and zoho_integration:
+        log.warning("executor.zoho_crm_failed", error=str(zoho_res))
 
     follow_str = f" Follow-up: {follow_up}" if follow_up else ""
     return {

@@ -44,7 +44,7 @@ export default function ClientsPage() {
         </button>
       </div>
 
-      <motion.div variants={containerFramer} initial="hidden" animate="show" className="grid lg:grid-cols-2 lg:grid-cols-3 gap-5">
+      <motion.div variants={containerFramer} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {clients.length === 0 && (
           <div className="col-span-full text-center py-24 px-4 bg-zinc-50 border border-zinc-200 rounded-[2rem]">
             <Users className="w-10 h-10 text-zinc-300 mx-auto mb-4" />
@@ -71,7 +71,12 @@ export default function ClientsPage() {
                 </div>
                 <div className="flex gap-2 items-center">
                   <Badge color={status.includes('Lead') ? 'brand' : 'success'} className="uppercase tracking-widest text-[9px] font-bold px-2 py-1">{status}</Badge>
-                  <button className="text-zinc-400 hover:text-zinc-900 transition-colors"><MoreVertical className="w-5 h-5" /></button>
+                  <button 
+                    onClick={() => alert(`Options for ${c.name}: \n1. View in Notion\n2. Call Lead\n3. Delete`)}
+                    className="text-zinc-400 hover:text-zinc-900 transition-colors"
+                  >
+                    <MoreVertical className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
 

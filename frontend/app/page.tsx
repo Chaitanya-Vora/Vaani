@@ -111,10 +111,33 @@ export default function LandingPage() {
             {mobileNav ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
+
+        {/* ── Mobile Menu Overlay ── */}
+        <AnimatePresence>
+          {mobileNav && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden bg-white border-b border-zinc-200 overflow-hidden"
+            >
+              <div className="flex flex-col p-6 gap-4 text-base font-medium text-zinc-600">
+                <a href="#features" onClick={() => setMobileNav(false)} className="hover:text-zinc-900">Features</a>
+                <a href="#pricing" onClick={() => setMobileNav(false)} className="hover:text-zinc-900">Pricing</a>
+                <Link href="/dashboard" onClick={() => setMobileNav(false)} className="hover:text-zinc-900">Dashboard</Link>
+                <hr className="border-zinc-100" />
+                <Link href="/auth/login" onClick={() => setMobileNav(false)} className="hover:text-zinc-900">Log in</Link>
+                <Link href="/auth/signup" onClick={() => setMobileNav(false)} className="bg-zinc-900 text-white text-center py-3 rounded-xl">
+                  Start Free Trial
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative pt-40 pb-20 px-6 overflow-hidden flex flex-col items-center justify-center text-center">
+      <section className="relative pt-24 md:pt-40 pb-20 px-6 overflow-hidden flex flex-col items-center justify-center text-center">
         {/* Soft background glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[500px] bg-brand/5 rounded-full blur-[100px] pointer-events-none" />
 

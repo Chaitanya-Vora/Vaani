@@ -27,7 +27,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4">
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-brand/5 rounded-full blur-[80px] pointer-events-none" />
       <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
+        <div className="text-center mb-4 md:mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
             <div className="w-10 h-10 rounded-xl bg-zinc-900 shadow-sm flex items-center justify-center">
               <Mic className="w-5 h-5 text-white" />

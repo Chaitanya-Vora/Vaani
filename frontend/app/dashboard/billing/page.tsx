@@ -132,7 +132,7 @@ export default function BillingPage() {
       </Card>
 
       {/* Plans grid */}
-      <div className="grid sm:grid-cols-3 gap-5 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
         {PLANS.map(({ id, name, price, icon: Icon, tagline, tasks, popular, features, notIncluded }) => {
           const isCurrent = currentPlan === id
           return (

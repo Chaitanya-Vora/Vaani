@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Vaani"
     APP_VERSION: str = "1.0.0"
     ENV: str = "development"
+    FRONTEND_URL: str = "http://localhost:3000"
     SECRET_KEY: str = "change-me-in-production-use-openssl-rand-hex-32"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 43200  # 30 days
@@ -71,7 +72,12 @@ class Settings(BaseSettings):
     PLAN_PRO_TASKS: int = 999999  # unlimited
 
     # ── CORS / Security ───────────────────────────────────────────────────────
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "https://vaani.app"]
+    ALLOWED_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "https://vaani.app",
+        "https://vaani-nine.vercel.app",
+        "https://vaani-nine-chaitanyavoras-projects.vercel.app"
+    ]
     ALLOWED_HOSTS: List[str] = ["*"]
 
     # ── AWS (for data residency — Mumbai) ─────────────────────────────────────
