@@ -15,6 +15,9 @@ from app.models import (
     Expense, Invoice, ComplianceReminder, Message, MessageChannel, MessageType
 )
 
+# NOTE: Since there is no 'Announcement' model in app/models/__init__.py,
+# we skip adding a formal announcement record but ensure the demo account is perfect.
+
 async def seed_demo():
     print("🚀 Starting 'Premium Reality' 10-Feature Demo Seed...")
     async with AsyncSessionLocal() as db:
@@ -79,8 +82,8 @@ async def seed_demo():
 
         # 3. FEATURE: Priority Tasks (Strategic Management)
         tasks = [
-            UserTask(user_id=uid, description="Review Series A Term Sheet from Sequoia", status=UserTaskStatus.PENDING, priority=TaskPriority.HIGH, due_date=datetime.now(timezone.utc) + timedelta(days=1)),
-            UserTask(user_id=uid, description="Finalize Marketing Videos for Vaani Launch", status=UserTaskStatus.PENDING, priority=TaskPriority.MEDIUM, due_date=datetime.now(timezone.utc) + timedelta(days=3)),
+            UserTask(user_id=uid, description="Review final term sheet for Series A", status=UserTaskStatus.PENDING, priority=TaskPriority.HIGH, due_date=datetime.now(timezone.utc) + timedelta(days=1)),
+            UserTask(user_id=uid, description="Send proposed marketing video script to agency", status=UserTaskStatus.PENDING, priority=TaskPriority.MEDIUM, due_date=datetime.now(timezone.utc) + timedelta(days=3)),
         ]
         db.add_all(tasks)
         print("✅ Feature 3: Priority Tasks Seeded.")

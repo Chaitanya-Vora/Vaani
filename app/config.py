@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://vaani:vaani@localhost:5432/vaani"
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # DB Pooling (Optimized for Railway Starter/Pro limits)
+    DB_POOL_SIZE: int = 5
+    DB_MAX_OVERFLOW: int = 10
+    DB_POOL_TIMEOUT: int = 30
+
     # ── AI / LLM ──────────────────────────────────────────────────────────────
     ANTHROPIC_API_KEY: str = ""
     GOOGLE_API_KEY: str = ""          # for Gemini 2.0 Flash-Lite
@@ -76,7 +81,8 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "https://vaani.app",
         "https://vaani-nine.vercel.app",
-        "https://vaani-nine-chaitanyavoras-projects.vercel.app"
+        "https://vaani-nine-chaitanyavoras-projects.vercel.app",
+        ".vercel.app"  # Wildcard support for Vercel branch/preview domains
     ]
     ALLOWED_HOSTS: List[str] = ["*"]
 

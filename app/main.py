@@ -58,6 +58,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -110,9 +111,19 @@ async def rate_limit_middleware(request: Request, call_next):
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     log.error("unhandled_exception", path=request.url.path, error=str(exc), exc_info=True)
+    
+    # Manually apply CORS headers to ensure the browser doesn't block the error
+    # with a confusing 'Failed to Fetch' message.
+    origin = request.headers.get("origin")
+    headers = {}
+    if origin and (origin in settings.ALLOWED_ORIGINS or any(origin.endswith(sf) for sf in [".vercel.app", ".localhost"])):
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "Internal server error"},
+        content={"detail": "Internal server error. The team has been notified."},
+        headers=headers,
     )
 
 

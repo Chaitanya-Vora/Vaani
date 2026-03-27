@@ -2,22 +2,33 @@ const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('vaani_token') : null
-  const res = await fetch(`${BASE}${path}`, {
-    ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(opts.headers || {}),
-    },
-  })
-  if (res.status === 401) {
-    if (typeof window !== 'undefined') { clearToken(); window.location.href = '/auth/login' }
+  
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      ...opts,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(opts.headers || {}),
+      },
+    })
+    
+    if (res.status === 401) {
+      if (typeof window !== 'undefined') { clearToken(); window.location.href = '/auth/login' }
+    }
+    
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error((err as any).detail || `Request failed (${res.status})`)
+    }
+    
+    return res.json()
+  } catch (error: any) {
+    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      throw new Error('Connection refused. The server may be under high load. Please try again in 5 seconds.')
+    }
+    throw error
   }
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error((err as any).detail || 'Request failed')
-  }
-  return res.json()
 }
 
 export const api = {
