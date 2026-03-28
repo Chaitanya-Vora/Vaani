@@ -51,10 +51,14 @@ _redis_pool: aioredis.Redis | None = None
 async def get_redis() -> aioredis.Redis:
     global _redis_pool
     if _redis_pool is None:
+        # We add timeout/retry to prevent production crashes if localhost is used
         _redis_pool = aioredis.from_url(
             settings.REDIS_URL,
             encoding="utf-8",
             decode_responses=True,
             max_connections=20,
+            socket_timeout=2.0,
+            socket_connect_timeout=2.0,
+            retry_on_timeout=True
         )
     return _redis_pool

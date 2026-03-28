@@ -149,7 +149,7 @@ function DashboardContent() {
         <motion.div variants={itemFramer} className="lg:col-span-2">
           <div className="native-card p-6 shadow-sm h-full max-w-full overflow-hidden">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-[11px] lg:text-title-2 font-800 text-zinc-400 uppercase tracking-[0.2em]">Action distribution</h2>
+              <h2 className="text-xl font-display font-800 text-zinc-900 tracking-tight">Action distribution</h2>
             </div>
               <div className="h-64">
                 {intentData.length > 0 ? (
@@ -182,8 +182,8 @@ function DashboardContent() {
         <motion.div variants={itemFramer} className="h-full">
           <div className="native-card p-6 shadow-sm h-full flex flex-col max-w-full overflow-hidden">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-[11px] font-800 text-zinc-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                <Target className="w-4 h-4" /> Commitments
+              <h2 className="text-xl font-display font-800 text-zinc-900 tracking-tight flex items-center gap-2">
+                <Target className="w-5 h-5 text-orange-500" /> Commitments
               </h2>
             </div>
               <div className="space-y-4 flex-1">
@@ -210,8 +210,8 @@ function DashboardContent() {
         <motion.div variants={itemFramer} className="lg:col-span-2">
           <div className="native-card p-5 sm:p-8 shadow-sm h-full max-w-full overflow-hidden">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-[11px] font-800 text-zinc-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" /> Action log
+              <h2 className="text-xl font-display font-800 text-zinc-900 tracking-tight flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-zinc-900" /> Action log
               </h2>
             </div>
               <div className="space-y-2">
@@ -243,7 +243,7 @@ function DashboardContent() {
         <motion.div variants={itemFramer}>
           <div className="native-card p-8 shadow-sm h-full flex flex-col items-center justify-center text-center max-w-full overflow-hidden">
             <div className="w-full mb-6">
-              <h2 className="text-[11px] font-800 text-zinc-400 uppercase tracking-[0.2em]">Task capacity</h2>
+              <h2 className="text-xl font-display font-800 text-zinc-900 tracking-tight text-left">Task capacity</h2>
             </div>
               <div className="w-full h-48 relative">
                 <ResponsiveContainer width="100%" height="100%">

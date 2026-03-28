@@ -53,21 +53,25 @@ async def telegram_incoming(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
-    """Receive Telegram updates with executive heartbeat logging."""
+    """Receive Telegram updates with synchronous heartbeat for reliability."""
     try:
         payload = await request.json()
-        log.info("telegram.incoming", update_id=payload.get("update_id"))
-        
         parsed = parse_telegram_update(payload)
-        if parsed:
-            # We use background tasks, but we need to ensure the router doesn't crash
+        
+        if parsed and parsed.get("telegram_chat_id"):
+            chat_id = parsed["telegram_chat_id"]
+            # ── SYNCHRONOUS HEARTBEAT ──
+            # This confirms the server is REACHABLE regardless of DB/AI state
+            from app.bot.telegram import send_telegram_message as tg_send
+            await tg_send(chat_id, "⚡ _Vaani Operational Hub: Message Received. Processing..._")
+            
+            # Now proceed with heavy AI routing in the background
             background_tasks.add_task(route_telegram_message, parsed, db)
         
         return {"status": "ok"}
     except Exception as e:
         log.error("telegram.webhook_error", error=str(e))
-        # Don't return error to Telegram (to avoid retries), but log it internally
-        return {"status": "error", "detail": "Incident logged"}
+        return {"status": "ok"} # Always 200 to Telegram
 
 
 @router.post("/automation/{user_id}/{automation_id}")
