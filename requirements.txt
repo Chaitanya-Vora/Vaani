@@ -22,6 +22,7 @@ croniter==3.0.3
 anthropic==0.40.0
 openai==1.57.2
 google-generativeai==0.8.3
+google-cloud-texttospeech==2.20.0
 dateparser==1.2.0
 
 # ── HTTP ─────────────────────────────────────────────────────────────────────

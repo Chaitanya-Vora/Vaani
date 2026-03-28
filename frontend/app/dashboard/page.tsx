@@ -153,7 +153,7 @@ function DashboardContent() {
                 {intentData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={intentData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                      <XAxis dataKey="name" stroke="#a1a1aa" fontSize={11} tickLine={false} axisLine={false} />
+                      <XAxis dataKey="name" stroke="#a1a1aa" fontSize={10} tickLine={false} axisLine={false} hide={typeof window !== 'undefined' && window.innerWidth < 450} />
                       <YAxis stroke="#a1a1aa" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
                       <Tooltip 
                         cursor={{ fill: '#f4f4f5' }}
@@ -216,12 +216,12 @@ function DashboardContent() {
                 {stats?.recent_tasks?.length > 0 ? stats.recent_tasks.map((t: any) => {
                   const meta = INTENT_LABELS[t.intent] || { label: t.intent, color: 'bg-zinc-100 text-zinc-800 border-zinc-200' }
                   return (
-                    <div key={t.id} className="flex items-center gap-3 sm:gap-5 py-2.5 sm:py-3 border-b border-zinc-50 hover:bg-zinc-50 px-3 sm:px-4 rounded-xl sm:rounded-2xl transition-colors last:border-0 cursor-pointer active:scale-[0.99]">
-                      <div className={`flex-shrink-0 text-[9px] sm:text-[11px] font-800 tracking-widest uppercase px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border ${meta.color} w-24 sm:w-36 text-center shadow-sm truncate`}>
-                        {meta.label}
+                    <div key={t.id} className="flex items-center gap-3 sm:gap-5 py-2.5 sm:py-3 border-b border-zinc-50 hover:bg-zinc-50 px-2 sm:px-4 rounded-xl sm:rounded-2xl transition-colors last:border-0 cursor-pointer active:scale-[0.99] overflow-hidden">
+                      <div className={`flex-shrink-0 text-[9px] sm:text-[11px] font-800 tracking-widest uppercase px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border ${meta.color} min-w-[76px] sm:w-36 text-center shadow-sm`}>
+                        {meta.label.length > 12 ? meta.label.slice(0, 10) + '..' : meta.label}
                       </div>
                       <div className="flex-1 min-w-0 flex items-center justify-between">
-                        <p className="text-zinc-900 text-sm sm:text-[15px] font-bold truncate pr-2 sm:pr-4">{t.summary || 'Operation logged'}</p>
+                        <p className="text-zinc-900 text-[13px] sm:text-[15px] font-bold truncate pr-1 sm:pr-4">{t.summary || 'Operation logged'}</p>
                         <p className="text-zinc-400 text-[9px] sm:text-[11px] font-800 whitespace-nowrap hidden sm:block">
                           {new Date(t.created_at).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                         </p>

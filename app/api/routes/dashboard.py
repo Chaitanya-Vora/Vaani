@@ -54,6 +54,7 @@ async def get_me(user=Depends(get_current_user), db: AsyncSession = Depends(get_
         "gstin": user.gstin,
         "whatsapp_number": user.whatsapp_number,
         "language_pref": user.language_pref,
+        "reply_in_audio": user.reply_in_audio,
         "plan": sub.plan.value if sub else "starter",
         "plan_status": sub.status.value if sub else "trial",
         "tasks_used": sub.tasks_used_this_month if sub else 0,
@@ -240,7 +241,7 @@ async def update_profile(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    allowed = {"name", "business_name", "gstin", "language_pref", "business_type", "whatsapp_number"}
+    allowed = {"name", "business_name", "gstin", "language_pref", "business_type", "whatsapp_number", "reply_in_audio"}
     for key, value in body.items():
         if key in allowed and hasattr(user, key):
             setattr(user, key, value)

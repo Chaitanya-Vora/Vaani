@@ -1,9 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Save, MessageCircle, Phone } from 'lucide-react'
+import { Save, MessageCircle, Phone, Volume2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import DashboardShell from '@/components/layout/DashboardShell'
-import { Card, Button, Input, Select, Spinner } from '@/components/ui'
+import { Card, Button, Input, Select, Spinner, Toggle } from '@/components/ui'
 
 export default function SettingsPage() {
   const [user,    setUser]    = useState<any>(null)
@@ -13,8 +13,10 @@ export default function SettingsPage() {
   const [form,    setForm]    = useState({
     name: '', business_name: '', gstin: '',
     whatsapp_number: '', language_pref: 'en', business_type: 'msme',
+    reply_in_audio: false,
   })
   const set = (k: string) => (e: any) => setForm(f => ({ ...f, [k]: e.target.value }))
+  const setBool = (k: string) => (v: boolean) => setForm(f => ({ ...f, [k]: v }))
 
   useEffect(() => {
     api.dashboard.me().then((u: any) => {
@@ -23,6 +25,7 @@ export default function SettingsPage() {
         name: u.name || '', business_name: u.business_name || '',
         gstin: u.gstin || '', whatsapp_number: u.whatsapp_number || '',
         language_pref: u.language_pref || 'en', business_type: u.business_type || 'msme',
+        reply_in_audio: u.reply_in_audio || false,
       })
     }).finally(() => setLoading(false))
   }, [])
@@ -67,7 +70,35 @@ export default function SettingsPage() {
                 { value: 'aif',        label: 'AIF / PMS / PE Firm' },
                 { value: 'freelancer', label: 'Independent Consultant' },
                 { value: 'd2c',        label: 'D2C / E-commerce Brand' },
+                { value: 'office',     label: 'Corporate Office' },
               ]} />
+          </div>
+        </Card>
+
+        <Card className="bg-white border-zinc-200 shadow-sm p-8 rounded-[2rem]">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-900 flex items-center justify-center shadow-lg transform rotate-3">
+                <Volume2 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-display font-800 text-xl text-zinc-900 tracking-tight">Voice Intelligence</h3>
+                <p className="text-zinc-500 text-xs font-semibold">Premium Multimodal Feedback (Neural2)</p>
+              </div>
+            </div>
+            <Toggle checked={form.reply_in_audio} onChange={setBool('reply_in_audio')} />
+          </div>
+
+          <div className="bg-zinc-50 rounded-2xl p-5 border border-zinc-100 flex gap-4 items-start">
+            <div className="p-2 bg-white rounded-lg border border-zinc-200 mt-0.5">
+              <Phone className="w-4 h-4 text-brand" />
+            </div>
+            <div>
+              <p className="text-zinc-900 font-bold text-sm mb-1">Executive Audio Mode</p>
+              <p className="text-zinc-500 text-xs font-medium leading-relaxed">
+                When enabled, Vaani will speak back to you for **every** interaction. Recommended for hands-free operations while commuting or auditing.
+              </p>
+            </div>
           </div>
         </Card>
 

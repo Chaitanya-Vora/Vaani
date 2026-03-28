@@ -16,10 +16,17 @@
 }
 
 @layer base {
-  * { box-sizing: border-box; margin: 0; padding: 0; border-color: rgba(0, 0, 0, 0.06); }
-  html { scroll-behavior: smooth; font-size: 16px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-color: rgba(0, 0, 0, 0.06); -webkit-tap-highlight-color: transparent; }
+  html { 
+    scroll-behavior: smooth; font-size: 16px; 
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+  }
   body { 
     @apply text-zinc-900 bg-white antialiased font-body;
+    overflow-x: hidden;
+    position: relative;
+    touch-action: pan-y;
   }
 
   /* Force Premium Display Font on Mobile for all text */

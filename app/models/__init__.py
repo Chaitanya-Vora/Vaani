@@ -121,6 +121,7 @@ class User(Base):
     gstin = Column(String(15), nullable=True)                # GSTIN for invoice generation
     business_type = Column(String(100), nullable=True)       # "startup", "msme", "ca_firm", "aif"
     language_pref = Column(String(10), default="en")         # "en", "hi", "mr", "gu", "ta"
+    reply_in_audio = Column(Boolean, default=False)          # Always reply via Voice TTS
 
     # Messaging channel identities
     whatsapp_number = Column(String(20), unique=True, nullable=True, index=True)

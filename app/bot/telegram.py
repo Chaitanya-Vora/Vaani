@@ -97,6 +97,23 @@ async def send_telegram_message(chat_id: str, text: str) -> bool:
         return False
 
 
+async def send_telegram_voice(chat_id: str, file_path: str, caption: str = None) -> bool:
+    """Send an audio file as a Telegram Voice note."""
+    bot = Bot(settings.TELEGRAM_BOT_TOKEN)
+    try:
+        with open(file_path, 'rb') as voice_file:
+            await bot.send_voice(
+                chat_id=chat_id,
+                voice=voice_file,
+                caption=caption,
+                parse_mode=ParseMode.MARKDOWN
+            )
+        return True
+    except Exception as e:
+        log.error("telegram.send_voice_error", chat_id=chat_id, error=str(e))
+        return False
+
+
 async def get_telegram_file_url(file_id: str) -> str | None:
     """Get download URL for a Telegram file."""
     bot = Bot(settings.TELEGRAM_BOT_TOKEN)

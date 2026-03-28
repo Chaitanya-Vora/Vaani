@@ -18,11 +18,16 @@ from app.models import (
     User, Message, AITask, Subscription,
     MessageChannel, MessageType, IntentType, TaskStatus, PlanTier
 )
-from app.ai.transcription import transcribe_audio, _download_audio
+from app.ai.transcription import _download_audio
 from app.ai.intent import classify_intent, generate_response
 from app.ai.executor import execute_intent
+from app.ai.voice import generate_voice_response, cleanup_voice_file
 from app.bot.whatsapp import send_text_message as wa_send, mark_message_read
-from app.bot.telegram import send_telegram_message as tg_send, get_telegram_file_url
+from app.bot.telegram import (
+    send_telegram_message as tg_send, 
+    send_telegram_voice as tg_send_voice,
+    get_telegram_file_url
+)
 from app.database import get_redis
 
 log = structlog.get_logger(__name__)
@@ -249,6 +254,29 @@ async def _process_message(
         response_text += f"\n\n🔗 {notion_url}"
 
     await send_fn(response_text)
+
+    # ── 10.5. Hybrid Voice-Back (Shark Tank Premium) ─────────────────────────
+    # If the user preference is 'reply_in_audio' OR they sent a voice note, we speak back.
+    if (user.reply_in_audio or msg_type == MessageType.VOICE) and channel == MessageChannel.TELEGRAM:
+        voice_path = None
+        try:
+            # Generate the voice from the finalized response_text
+            log.info("message_router.generating_voice", chat_id=str(channel_identifier), forced=user.reply_in_audio)
+            lang = user.language_pref or "hi"
+            voice_path = generate_voice_response(response_text, language=lang)
+            
+            if voice_path:
+                await tg_send_voice(
+                    chat_id=str(channel_identifier), 
+                    file_path=voice_path,
+                    caption="🎙️ *Vaani AI Audio Feedback*"
+                )
+                log.info("message_router.voice_sent", chat_id=str(channel_identifier))
+        except Exception as e:
+            log.warning("message_router.voice_failed", error=str(e))
+        finally:
+            if voice_path:
+                cleanup_voice_file(voice_path)
 
     # ── 11. Update conversation history in Redis ──────────────────────────────
     await _update_conversation_history(
