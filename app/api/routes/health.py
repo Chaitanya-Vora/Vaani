@@ -6,7 +6,7 @@ from app.config import settings
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("/health")
 async def health():
     return {"status": "ok", "service": "vaani-api", "ts": datetime.now(timezone.utc).isoformat()}
 
