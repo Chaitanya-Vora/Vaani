@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import DashboardShell from '@/components/layout/DashboardShell'
 import { Card, Badge, Spinner } from '@/components/ui'
+import { PremiumEmptyState } from '@/components/ui/EmptyState'
 
 export default function CommitmentsPage() {
   const [user,    setUser]    = useState<any>(null)
@@ -32,48 +33,53 @@ export default function CommitmentsPage() {
 
   return (
     <DashboardShell user={user}>
-      <div className="mb-8">
-        <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Active Promises</h1>
-        <p className="text-zinc-500 font-medium text-base">
+      <div className="mb-8 px-1">
+        <h1 className="text-title-1 text-zinc-900 mb-1">Active Promises</h1>
+        <p className="text-body-secondary mt-1">
           Promises made to your clients via voice. Tracked proactively by our backend.
         </p>
       </div>
 
-      <motion.div variants={containerFramer} initial="hidden" animate="show" className="space-y-4 max-w-4xl">
+      <motion.div variants={containerFramer} initial="hidden" animate="show" className="space-y-3 max-w-4xl">
         {commitments.length === 0 && (
-          <div className="text-center py-24 px-4 bg-zinc-50 border border-zinc-200 rounded-[2rem]">
-            <Target className="w-10 h-10 text-zinc-300 mx-auto mb-4" />
-            <p className="text-zinc-600 font-bold text-base">No active commitments executing.</p>
-            <p className="text-zinc-400 font-medium text-sm mt-1">Send Vaani a voice note with a deadline context (e.g. "Remind me to call him at 4PM").</p>
-          </div>
+          <PremiumEmptyState
+            icon={Target}
+            title="No active commitments"
+            description="Your promise queue is clear. Send Vaani a voice note like 'Remind me to call him at 4PM' to track a new commitment."
+            actionLabel="View Breaches"
+            onAction={() => console.log('Breaches')}
+            centered
+          />
         )}
         {commitments.map(c => (
           <motion.div variants={itemFramer} key={c.id}>
-            <Card className="flex items-center gap-5 hover:border-zinc-300 bg-white border-zinc-200 shadow-sm p-5 rounded-2xl transition-all cursor-pointer group">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border shadow-sm ${
-                c.status === 'completed' ? 'bg-zinc-100 text-green-500 border-zinc-200' : 
+            <Card className="flex items-center gap-4 native-card p-5 transition-all cursor-pointer group active:scale-[0.98]">
+              <div className={`w-12 h-12 rounded-[14px] flex items-center justify-center flex-shrink-0 border shadow-sm ${
+                c.status === 'completed' ? 'bg-zinc-50 text-green-500 border-zinc-100' : 
                 c.status === 'missed' ? 'bg-red-50 text-red-500 border-red-100' : 
-                'bg-brand/10 text-brand border-brand/20'
+                'bg-[#1d9e751a] text-[#1d9e75] border-[#1d9e7533]'
               }`}>
                 {c.status === 'completed' ? <CheckCircle className="w-5 h-5" /> : 
                  c.status === 'missed' ? <Clock className="w-5 h-5" /> : 
                  <Target className="w-5 h-5" />}
               </div>
               
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1.5">
-                  <p className="font-display font-800 text-zinc-900 text-lg tracking-tight break-words whitespace-normal leading-tight">{c.desc}</p>
-                  <span className="w-fit text-[9px] uppercase tracking-widest font-bold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-md border border-zinc-200">{c.type}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1.5">
+                  <p className="text-body-native font-700 text-zinc-900 tracking-tight break-words whitespace-normal leading-tight">{c.desc}</p>
+                  <span className="w-fit text-caption-native text-zinc-500 bg-zinc-50 px-2 py-0.5 rounded-md border border-zinc-100">{c.type}</span>
                 </div>
-                <p className="text-zinc-500 font-medium text-sm break-words whitespace-normal leading-relaxed">Target Recipient: <span className="text-zinc-900 font-bold">{c.recipient}</span></p>
+                <p className="text-body-secondary text-[13px] font-500">Recipient: <span className="text-zinc-900 font-700">{c.recipient}</span></p>
+              </div>
 
               <div className="text-right flex-shrink-0 flex flex-col items-end">
                 <Badge color={
                   c.status === 'completed' ? 'success' : 
                   c.status === 'missed' ? 'danger' : 'warning'
-                } className="mb-2 uppercase tracking-widest text-[9px] font-bold px-2 py-1">
+                } className="mb-2 text-caption-native px-2 py-0.5">
                   {c.status === 'missed' ? 'Breached' : c.status}
                 </Badge>
-                <p className="text-zinc-400 text-xs font-mono font-bold bg-zinc-50 px-2 py-1 border border-zinc-100 rounded-md">
+                <p className="text-body-secondary text-[11px] font-700 bg-zinc-50 px-2 py-1 border border-zinc-100 rounded-md">
                   {new Date(c.due).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>

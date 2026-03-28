@@ -89,38 +89,36 @@ function DashboardContent() {
 
   return (
     <DashboardShell user={user}>
-      {/* Welcome banner */}
+      {/* Welcome banner (Solid Premium) */}
       {welcome && (
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-zinc-50 border border-zinc-200 rounded-[1.5rem] p-6 mb-8 flex items-start gap-4 shadow-sm">
-          <Sparkles className="w-6 h-6 text-zinc-900 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-display font-bold text-lg text-zinc-900 mb-1">
-              Active Agent Initialized, {user?.name?.split(' ')[0]}! ⚡ Let's organize your workflows.
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-zinc-200 rounded-[2rem] p-7 mb-10 flex items-start gap-5 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-900 flex items-center justify-center flex-shrink-0 shadow-sm">
+            <Sparkles className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h2 className="font-display font-800 text-xl text-zinc-900 mb-1.5 tracking-tight">
+              Active Agent Initialized, {user?.name?.split(' ')[0]}! ⚡
+            </h2>
+            <p className="text-zinc-500 font-display font-600 text-sm mb-5 leading-relaxed">
+              Connect your Notion database to begin auto-structuring Ideas and capturing Lead contact cards. We'll handle the logistics while you focus on execution.
             </p>
-            <p className="text-zinc-500 font-medium mb-4">
-              Connect your Notion database to begin auto-structuring Ideas and capturing Lead contact cards.
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => router.push('/dashboard/integrations')} className="bg-zinc-900 text-white font-semibold px-5 py-2 rounded-full hover:bg-zinc-800 transition-colors shadow-sm">
-                Connect Integrations
-              </button>
-            </div>
+            <button onClick={() => router.push('/dashboard/integrations')} className="bg-zinc-900 text-white font-display font-700 text-xs uppercase tracking-widest px-8 py-3 rounded-full hover:bg-zinc-800 transition-all shadow-sm active:scale-95">
+              Connect Integrations
+            </button>
           </div>
         </motion.div>
       )}
 
-      <div className="mb-10">
-        <h1 className="font-display font-800 text-3xl text-zinc-900 tracking-tight">
-          Command Center
-        </h1>
-        <p className="text-zinc-500 font-medium mt-1">
-          {user?.business_name} • System is active and monitoring
+      <div className="mb-8 px-1">
+        <h1 className="text-title-1 text-zinc-900">Command Center</h1>
+        <p className="text-body-secondary mt-1">
+          {user?.business_name} • System Monitoring Active
         </p>
       </div>
 
       <motion.div variants={containerFramer} initial="hidden" animate="show">
-        {/* Stats grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        {/* Stats grid (True Square 1:1) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
           {[
             { label: 'AI Actions', value: totalActions, icon: CheckSquare, sub: 'Processed' },
             { label: 'Hours Saved', value: Math.round(Number(totalActions) * 0.25) || 0, icon: Sparkles, sub: 'Efficiency' },
@@ -128,16 +126,16 @@ function DashboardContent() {
             { label: 'Pending', value: commitments.filter(c => c.status !== 'completed').length || 0, icon: Target, sub: 'Tracking' },
           ].map((stat, i) => (
             <motion.div variants={itemFramer} key={i}>
-              <div className="bg-white border border-zinc-200 rounded-2xl p-3 sm:p-5 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col justify-between">
-                <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
-                    <stat.icon className="w-3.5 h-3.5 text-zinc-900" />
+              <div className="native-card aspect-square p-5 flex flex-col justify-between hover:border-zinc-300 transition-all cursor-pointer group active:scale-[0.97]">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-[12px] bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
+                    <stat.icon className="w-4 h-4 text-zinc-900" />
                   </div>
-                  <span className="text-[8px] sm:text-xs font-800 text-zinc-400 uppercase tracking-widest leading-tight">{stat.label}</span>
+                  <span className="text-caption-native text-zinc-400">{stat.label}</span>
                 </div>
                 <div>
-                  <div className="text-lg sm:text-2xl font-display font-900 text-zinc-900 tracking-tight leading-none">{stat.value}</div>
-                  <div className="text-[10px] text-zinc-400 font-bold mt-1 leading-tight sm:block hidden">{stat.sub}</div>
+                  <div className="text-4xl font-800 text-zinc-900 tracking-tighter">{stat.value}</div>
+                  <div className="text-body-secondary font-500 mt-1 sm:block hidden">{stat.sub}</div>
                 </div>
               </div>
             </motion.div>
@@ -145,11 +143,11 @@ function DashboardContent() {
         </div>
 
         {/* Heatmap & Commitments Grid */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-6">
+        <div className="grid lg:grid-cols-3 gap-6 mb-8">
           <motion.div variants={itemFramer} className="lg:col-span-2">
-            <div className="bg-white border border-zinc-200 rounded-[2rem] p-8 shadow-sm h-full">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="font-display font-800 text-xl text-zinc-900 tracking-tight">AI Action Distribution</h2>
+            <div className="bg-white native-border rounded-[20px] p-6 shadow-sm h-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-title-2 text-zinc-900">Action Distribution</h2>
               </div>
               <div className="h-64">
                 {intentData.length > 0 ? (
@@ -159,7 +157,7 @@ function DashboardContent() {
                       <YAxis stroke="#a1a1aa" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
                       <Tooltip 
                         cursor={{ fill: '#f4f4f5' }}
-                        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e4e4e7', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                        contentStyle={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
                         itemStyle={{ color: '#18181b', fontWeight: 'bold' }} 
                       />
                       <Bar dataKey="count" radius={[4, 4, 0, 0]}>
@@ -172,7 +170,7 @@ function DashboardContent() {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-zinc-400">
                     <Sparkles className="w-8 h-8 mb-2 opacity-50" />
-                    <p className="text-sm font-medium">No actions processed yet</p>
+                    <p className="text-body-secondary">No actions processed yet</p>
                   </div>
                 )}
               </div>
@@ -180,32 +178,27 @@ function DashboardContent() {
           </motion.div>
 
           <motion.div variants={itemFramer} className="h-full">
-            <div className="bg-white border border-zinc-200 rounded-[2rem] p-8 shadow-sm h-full flex flex-col">
+            <div className="bg-white native-border rounded-[20px] p-6 shadow-sm h-full flex flex-col">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-display font-800 text-xl text-zinc-900 flex items-center gap-2 tracking-tight">
-                  <Target className="w-5 h-5 text-orange-500" /> Commitments Tracker
+                <h2 className="text-title-2 text-zinc-900 flex items-center gap-2">
+                  <Target className="w-5 h-5 text-orange-500" /> Commitments
                 </h2>
               </div>
               <div className="space-y-4 flex-1">
                 {commitments.length === 0 && (
-                  <p className="text-sm font-medium text-zinc-500 mt-2">No active commitments found.</p>
+                  <p className="text-body-secondary mt-2">No active commitments found.</p>
                 )}
                 {commitments.map((c) => (
-                  <div key={c.id} className="pb-4 border-b border-zinc-100 last:border-0 last:pb-0">
-                    <p className="font-bold text-zinc-900 text-[15px] mb-2">{c.desc}</p>
+                  <div key={c.id} className="pb-4 border-b border-zinc-50 last:border-0 last:pb-0">
+                    <p className="text-[15px] font-700 text-zinc-900 mb-2">{c.desc}</p>
                     <div className="flex items-center gap-3">
-                      <span className={`text-[10px] px-2.5 py-1 rounded-md font-bold tracking-wide uppercase ${c.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                      <span className={`text-caption-native px-2 py-0.5 rounded-md ${c.status === 'completed' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'}`}>
                         {c.status}
                       </span>
-                      <span className="text-xs font-semibold text-zinc-400">For: {c.recipient}</span>
+                      <span className="text-body-secondary text-[13px]">For: {c.recipient}</span>
                     </div>
                   </div>
                 ))}
-              </div>
-              <div className="mt-6 pt-4 border-t border-zinc-100">
-                <p className="text-zinc-500 text-xs font-medium leading-relaxed">
-                  Vaani tracks commitments using NLP and pings you dynamically on WhatsApp to fulfill them.
-                </p>
               </div>
             </div>
           </motion.div>

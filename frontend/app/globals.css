@@ -1,11 +1,28 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+:root {
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --border-native: 1px solid rgba(0, 0, 0, 0.06);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-medium: 200ms;
+  --duration-slow: 300ms;
+}
 
 @layer base {
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body { @apply text-zinc-900 bg-white antialiased; }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-color: rgba(0, 0, 0, 0.06); }
+  html { scroll-behavior: smooth; font-size: 16px; }
+  body { 
+    @apply text-zinc-900 bg-white antialiased font-body;
+  }
+
+  /* Force Premium Display Font on Mobile for all text */
+  @media (max-width: 1024px) {
+    body { font-family: var(--font-display), sans-serif !important; }
+    h1, h2, h3, h4, h5, h6 { @apply tracking-tight; }
+  }
 
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -13,17 +30,28 @@
   ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
 }
 
-@layer components {
-  .glass {
-    @apply backdrop-blur-md bg-white/80 border-t border-zinc-200/50;
-  }
-}
-
 @layer utilities {
+  .font-400 { font-weight: 400; }
   .font-500 { font-weight: 500; }
-  .font-600 { font-weight: 600; }
   .font-700 { font-weight: 700; }
   .font-800 { font-weight: 800; }
-  .font-900 { font-weight: 900; }
-  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+  /* Semantic Typography Scales */
+  .text-title-1 { font-size: 28px; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+  .text-title-2 { font-size: 22px; font-weight: 500; line-height: 1.3; letter-spacing: -0.01em; }
+  .text-body-native { font-size: 17px; font-weight: 400; line-height: 1.5; }
+  .text-body-secondary { font-size: 14px; font-weight: 400; line-height: 1.4; color: #71717a; }
+  .text-caption-native { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* Component Styles */
+  .native-border { border: var(--border-native); }
+  .native-card { @apply bg-white native-border; border-radius: var(--radius-md); }
+  
+  /* Motion Utilities */
+  .animate-native-fast { transition: all var(--duration-fast) var(--ease-standard); }
+  .animate-native-medium { transition: all var(--duration-medium) var(--ease-standard); }
+
+  .safe-bottom { 
+    padding-bottom: env(safe-area-inset-bottom, 0px); 
+  }
 }

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import DashboardShell from '@/components/layout/DashboardShell'
 import { Card, Badge, Spinner } from '@/components/ui'
+import { PremiumEmptyState } from '@/components/ui/EmptyState'
 
 export default function TasksPage() {
   const [user, setUser] = useState<any>(null)
@@ -35,49 +36,53 @@ export default function TasksPage() {
 
   return (
     <DashboardShell user={user}>
-      <div className="mb-8">
-        <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Priority Tasks</h1>
-        <p className="text-zinc-500 text-base font-medium">
+      <div className="mb-8 px-1">
+        <h1 className="text-title-1 text-zinc-900 mb-1">Priority Tasks</h1>
+        <p className="text-body-secondary mt-1">
           Your active execution queue. Vaani will ping you when deadlines approach.
         </p>
       </div>
 
       <motion.div variants={containerFramer} initial="hidden" animate="show" className="max-w-3xl space-y-3">
         {tasks.length === 0 && (
-          <div className="text-center py-24 px-4 bg-zinc-50 border border-zinc-200 rounded-[2rem]">
-            <CheckCircle2 className="w-10 h-10 text-zinc-300 mx-auto mb-4" />
-            <p className="text-zinc-500 text-base font-semibold">You're all caught up!</p>
-            <p className="text-zinc-400 text-sm mt-1">Send a voice note like "I need to call Rahul today" to add a task.</p>
-          </div>
+          <PremiumEmptyState
+            icon={CheckCircle2}
+            title="You're all caught up!"
+            description="Your execution queue is clear. Send a voice note like 'Remind me to call Rahul' to add a task."
+            actionLabel="View History"
+            onAction={() => console.log('History')}
+            centered
+          />
         )}
         
         {tasks.map(t => (
           <motion.div variants={itemFramer} key={t.id}>
-            <Card className="flex items-center gap-4 hover:border-zinc-300 transition-colors cursor-pointer group p-4 sm:p-5 rounded-2xl shadow-sm">
+            <Card className="flex items-center gap-4 native-card transition-all cursor-pointer group p-5 active:scale-[0.98]">
               <div className="flex-shrink-0">
                 {t.status === 'completed' ? (
                   <CheckCircle2 className="w-6 h-6 text-zinc-300" />
                 ) : (
-                  <Circle className={`w-6 h-6 ${t.priority === 'high' ? 'text-red-500' : t.priority === 'medium' ? 'text-orange-400' : 'text-zinc-300'}`} />
+                  <Circle className={`w-6 h-6 ${t.priority === 'high' ? 'text-red-500' : t.priority === 'medium' ? 'text-[#1d9e75]' : 'text-zinc-300'}`} />
                 )}
               </div>
               
               <div className="flex-1 min-w-0">
-                <p className={`font-medium text-[15px] sm:text-lg break-words whitespace-normal ${t.status === 'completed' ? 'text-zinc-400 line-through' : 'text-zinc-800'}`}>
+                <p className={`text-body-native font-500 break-words whitespace-normal transition-all duration-200 ${t.status === 'completed' ? 'text-zinc-400 line-through' : 'text-zinc-900'}`}>
                   {t.description}
                 </p>
                 {t.due_date && (
-                  <div className="flex items-center gap-1.5 mt-1 text-xs font-semibold text-zinc-400">
-                    <Clock className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-1.5 mt-2 text-body-secondary text-[13px] font-500">
+                    <Clock className="w-4 h-4 text-zinc-400" />
                     <span>Due: {new Date(t.due_date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 )}
               </div>
 
               <div className="text-right flex-shrink-0">
-                 <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md ${
+                 <span className={`text-caption-native px-2 py-0.5 rounded-md ${
+                   t.status === 'completed' ? 'bg-zinc-50 text-zinc-400' :
                    t.priority === 'high' ? 'bg-red-50 text-red-600' : 
-                   t.priority === 'medium' ? 'bg-orange-50 text-orange-600' : 
+                   t.priority === 'medium' ? 'bg-[#1d9e751a] text-[#1d9e75]' : 
                    'bg-zinc-100 text-zinc-500'
                  }`}>
                    {t.priority}

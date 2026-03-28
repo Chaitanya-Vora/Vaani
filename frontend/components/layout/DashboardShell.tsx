@@ -119,24 +119,34 @@ export default function DashboardLayout({ children, user }: { children: React.Re
       {/* Desktop sidebar */}
       <div className="hidden lg:block"><Sidebar /></div>
 
-      {/* Mobile nav (Bottom) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[100] lg:hidden glass safe-bottom px-6 py-3 flex items-center justify-between shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.05)]">
+      {/* Mobile nav (Absolute Native Pill-Nav) */}
+      <nav 
+        className="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white border-t border-zinc-100 px-4 flex items-center justify-between"
+        style={{ height: 'calc(80px + env(safe-area-inset-bottom, 0px))', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         {MOBILE_NAV.map(({ href, icon: Icon, label }) => {
           const active = path === href || (href !== '/dashboard' && path.startsWith(href))
           return (
-            <Link key={href} href={href} className={clsx(
-              'flex flex-col items-center gap-1 transition-all duration-200',
-              active ? 'text-zinc-900 scale-105' : 'text-zinc-400'
-            )}>
-              <Icon className={clsx("w-5 h-5", active ? "fill-zinc-900/5 stroke-[2.5px]" : "stroke-[2px]")} />
-              <span className="text-[10px] font-bold uppercase tracking-tight">{label}</span>
+            <Link key={href} href={href} className="flex-1 flex flex-col items-center gap-1 group">
+              <div className={clsx(
+                "w-14 h-7 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out",
+                active ? "bg-[#1d9e751a] text-[#1d9e75]" : "text-zinc-400 group-hover:text-zinc-600"
+              )}>
+                <Icon className={clsx("w-5 h-5", active ? "stroke-[2.5px]" : "stroke-[2px]")} />
+              </div>
+              <span className={clsx(
+                "text-caption-native leading-none mt-1 transition-colors duration-200",
+                active ? "text-[#1d9e75] font-800" : "text-zinc-400 font-500"
+              )}>{label}</span>
             </Link>
           )
         })}
         {/* More button to trigger sidebar */}
-        <button onClick={() => setOpen(true)} className="flex flex-col items-center gap-1 text-zinc-400">
-          <Menu className="w-5 h-5" />
-          <span className="text-[10px] font-bold uppercase tracking-tight">More</span>
+        <button onClick={() => setOpen(true)} className="flex-1 flex flex-col items-center gap-1 text-zinc-400 group">
+          <div className="w-14 h-7 rounded-full flex items-center justify-center group-hover:bg-zinc-100 transition-all duration-200">
+            <Menu className="w-5 h-5 stroke-[2px]" />
+          </div>
+          <span className="text-caption-native leading-none mt-1 font-500">More</span>
         </button>
       </nav>
 
@@ -166,11 +176,17 @@ export default function DashboardLayout({ children, user }: { children: React.Re
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar (Compact on mobile) */}
-        <header className="h-14 lg:h-16 border-b border-zinc-100 bg-white/80 backdrop-blur-md flex items-center px-4 lg:px-6 gap-4 sticky top-0 z-40">
-          <div className="flex-1 flex items-center text-xs lg:text-sm font-bold text-zinc-900 tracking-tight uppercase">
-            <LayoutPanelLeft className="w-4 h-4 mr-2 text-zinc-400" /> 
-            Vaani OS
+        {/* Top bar (Identity-First on mobile) */}
+        <header className="h-[56px] border-b border-zinc-100 bg-white flex items-center px-4 gap-4 sticky top-0 z-40">
+          <div className="flex-1 flex items-center gap-3">
+            <Link href="/dashboard" className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center shadow-sm lg:hidden">
+                <ZapIcon className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-title-2 font-800 text-zinc-900 tracking-tight lg:text-sm lg:uppercase">
+                Vaani OS
+              </span>
+            </Link>
           </div>
           <div className="flex items-center gap-3">
              <div className="hidden lg:flex items-center gap-2">
@@ -180,8 +196,12 @@ export default function DashboardLayout({ children, user }: { children: React.Re
                   Open WhatsApp
                 </a>
              </div>
-             <div className="w-8 h-8 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center lg:hidden">
-                <span className="text-zinc-900 font-bold text-xs">{user?.name?.[0]}</span>
+             <div className="w-8 h-8 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center lg:hidden overflow-hidden">
+                {user?.image ? (
+                  <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-zinc-900 font-bold text-xs">{user?.name?.[0] || 'V'}</span>
+                )}
              </div>
           </div>
         </header>
