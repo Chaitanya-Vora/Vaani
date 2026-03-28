@@ -11,7 +11,8 @@ from typing import Optional
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload
 
 from app.config import settings
 from app.models import (
@@ -71,8 +72,12 @@ async def route_telegram_message(parsed_msg: dict, db: AsyncSession) -> None:
         parts = text.split()
         if len(parts) == 2 and "@" in parts[1]:
             email = parts[1].lower().strip()
-            # Find dashboard user by email
-            res = await db.execute(select(User).where(User.email == email))
+            # Find dashboard user by email with eager loading
+            res = await db.execute(
+                select(User)
+                .options(selectinload(User.subscription))
+                .where(User.email == email)
+            )
             dash_user = res.scalar_one_or_none()
             
             if dash_user:
@@ -343,11 +348,15 @@ async def _get_or_create_user(
     """Find user by channel identifier; create if first time."""
     if channel == MessageChannel.WHATSAPP:
         result = await db.execute(
-            select(User).where(User.whatsapp_number == identifier)
+            select(User)
+            .options(selectinload(User.subscription))
+            .where(User.whatsapp_number == identifier)
         )
     else:
         result = await db.execute(
-            select(User).where(User.telegram_chat_id == identifier)
+            select(User)
+            .options(selectinload(User.subscription))
+            .where(User.telegram_chat_id == identifier)
         )
 
     user = result.scalar_one_or_none()

@@ -193,7 +193,7 @@ export default function DashboardLayout({ children, user }: { children: React.Re
       </AnimatePresence>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar (Identity-First on mobile) - HIDDEN ON DESKTOP for Baseline Sync */}
         <header className="h-[56px] border-b border-zinc-100 bg-white flex items-center px-4 gap-4 sticky top-0 z-40 lg:hidden">
           <div className="flex-1 flex items-center gap-3">
@@ -225,8 +225,8 @@ export default function DashboardLayout({ children, user }: { children: React.Re
         </header>
 
         <main className={clsx(
-          "flex-1 p-4 lg:p-10 bg-white max-w-full overflow-x-hidden",
-          "pb-28 lg:pb-10" // Leave space for Bottom Nav on mobile
+          "flex-1 p-4 lg:p-10 bg-white max-w-full",
+          "pb-40 lg:pb-10" // Extensive buffer for bottom nav + Telegram button
         )}>
           {children}
         </main>

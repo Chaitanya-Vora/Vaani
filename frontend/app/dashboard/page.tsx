@@ -160,7 +160,7 @@ function DashboardContent() {
       {/* Heatmap & Commitments Grid (16px Card Radius / Title 2) */}
       <div className="grid lg:grid-cols-3 gap-6 mb-8">
         <motion.div variants={itemFramer} className="lg:col-span-2">
-          <div className="native-card p-6 shadow-sm h-full max-w-full overflow-hidden">
+          <div className="native-card p-6 shadow-sm h-auto lg:h-full max-w-full overflow-visible lg:overflow-hidden">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-display font-800 text-zinc-900 tracking-tight">Action distribution</h2>
             </div>
@@ -192,8 +192,8 @@ function DashboardContent() {
             </div>
           </motion.div>
 
-        <motion.div variants={itemFramer} className="h-full">
-          <div className="native-card p-6 shadow-sm h-full flex flex-col max-w-full overflow-hidden">
+        <motion.div variants={itemFramer} className="h-auto lg:h-full">
+          <div className="native-card p-6 shadow-sm h-auto lg:h-full flex flex-col max-w-full overflow-visible lg:overflow-hidden">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-display font-800 text-zinc-900 tracking-tight flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-500" /> Commitments
