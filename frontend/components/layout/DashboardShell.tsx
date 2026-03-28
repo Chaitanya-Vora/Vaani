@@ -28,7 +28,11 @@ export default function DashboardLayout({ children, user }: { children: React.Re
   const router   = useRouter()
   const [open, setOpen] = useState(false)
 
-  const logout = () => { clearToken(); router.push('/auth/login') }
+  const logout = () => { 
+    clearToken();
+    // Use hard redirect for instant, foolproof session purge
+    window.location.href = '/auth/login';
+  }
 
   const getTrialDaysLeft = () => {
     if (!user?.trial_ends_at || user.plan_status !== 'trial') return null;
@@ -48,7 +52,7 @@ export default function DashboardLayout({ children, user }: { children: React.Re
           <div className="w-8 h-8 rounded-[10px] bg-zinc-900 flex items-center justify-center shadow-sm">
             <ZapIcon className="w-4 h-4 text-white" />
           </div>
-          <span className="font-display font-700 text-zinc-900 text-lg tracking-tight">Vaani OS</span>
+          <span className="font-display font-700 text-zinc-900 text-lg tracking-tight">Vaani</span>
         </Link>
         {mobile && <button onClick={() => setOpen(false)}><X className="w-5 h-5 text-zinc-400" /></button>}
       </div>
@@ -197,8 +201,8 @@ export default function DashboardLayout({ children, user }: { children: React.Re
               <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center shadow-sm lg:hidden">
                 <ZapIcon className="w-4 h-4 text-white" />
               </div>
-              <span className="text-title-2 font-800 text-zinc-900 tracking-tight lg:text-sm lg:uppercase">
-                Vaani OS
+              <span className="text-title-2 font-800 text-zinc-900 tracking-tight lg:hidden">
+                Vaani
               </span>
             </Link>
           </div>

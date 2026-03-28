@@ -133,11 +133,15 @@ function DashboardContent() {
                 <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
                   <stat.icon className="w-4 h-4 text-zinc-900" />
                 </div>
-                <span className="text-[10px] lg:text-caption-native font-800 text-zinc-400 uppercase tracking-wider">{stat.label}</span>
+                <span className="text-[10px] lg:text-caption-native font-800 text-zinc-400 tracking-wider">
+                  {stat.label.charAt(0).toUpperCase() + stat.label.slice(1).toLowerCase()}
+                </span>
               </div>
               <div>
                 <div className="text-3xl lg:text-4xl font-800 text-zinc-900 tracking-tighter">{stat.value}</div>
-                <div className="text-[10px] lg:text-body-secondary font-semibold text-zinc-400 mt-1 sm:block hidden uppercase tracking-widest">{stat.sub}</div>
+                <div className="text-[10px] lg:text-body-secondary font-semibold text-zinc-400 mt-1 sm:block hidden tracking-widest lowercase first-letter:uppercase">
+                  {stat.sub}
+                </div>
               </div>
             </div>
           </motion.div>

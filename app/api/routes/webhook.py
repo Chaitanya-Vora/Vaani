@@ -63,7 +63,7 @@ async def telegram_incoming(
             # ── SYNCHRONOUS HEARTBEAT ──
             # This confirms the server is REACHABLE regardless of DB/AI state
             from app.bot.telegram import send_telegram_message as tg_send
-            await tg_send(chat_id, "⚡ _Vaani Operational Hub: Message Received. Processing..._")
+            await tg_send(chat_id, "⚡ _Processing your request..._")
             
             # Now proceed with heavy AI routing in the background
             background_tasks.add_task(route_telegram_message, parsed, db)
