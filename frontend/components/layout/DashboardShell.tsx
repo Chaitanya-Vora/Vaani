@@ -47,7 +47,7 @@ export default function DashboardLayout({ children, user }: { children: React.Re
       mobile ? 'w-full' : 'w-64 min-h-screen',
     )}>
       {/* Logo */}
-      <div className="px-6 py-9 border-b border-zinc-200 flex items-center justify-between">
+      <div className="px-6 py-5 border-b border-zinc-200 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-[10px] bg-zinc-900 flex items-center justify-center shadow-sm">
             <ZapIcon className="w-4 h-4 text-white" />
@@ -194,8 +194,8 @@ export default function DashboardLayout({ children, user }: { children: React.Re
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
-        {/* Top bar (Identity-First on mobile) */}
-        <header className="h-[56px] border-b border-zinc-100 bg-white flex items-center px-4 gap-4 sticky top-0 z-40">
+        {/* Top bar (Identity-First on mobile) - HIDDEN ON DESKTOP for Baseline Sync */}
+        <header className="h-[56px] border-b border-zinc-100 bg-white flex items-center px-4 gap-4 sticky top-0 z-40 lg:hidden">
           <div className="flex-1 flex items-center gap-3">
             <Link href="/dashboard" className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center shadow-sm lg:hidden">

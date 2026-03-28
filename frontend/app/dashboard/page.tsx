@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   Mic, CheckSquare, Users, ShieldCheck,
-  TrendingUp, Sparkles, Target, Zap
+  TrendingUp, Sparkles, Target, Zap, Send
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts'
 import { api } from '@/lib/api'
@@ -111,11 +111,20 @@ function DashboardContent() {
         </motion.div>
       )}
 
-      <div className="mb-8 px-1">
-        <h1 className="text-3xl font-display font-800 text-zinc-900 tracking-tight">Command center</h1>
-        <p className="text-zinc-500 font-medium text-sm mt-1">
-          {user?.business_name} • System Monitoring Active
-        </p>
+      <div className="mb-8 px-1 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-800 text-zinc-900 tracking-tight">Command center</h1>
+          <p className="text-zinc-500 font-medium text-sm mt-1">
+            {user?.business_name} • System Monitoring Active
+          </p>
+        </div>
+        <div className="hidden lg:block">
+          <a href="https://t.me/Chaitanya_VaaniBot" target="_blank" rel="noopener"
+            className="flex items-center gap-2 text-xs font-bold text-zinc-600 hover:text-zinc-900 transition-colors bg-white border border-zinc-200 shadow-sm rounded-full px-6 py-2.5 hover:shadow-md">
+            <Send className="w-4 h-4 text-zinc-900" />
+            Open Telegram Bot
+          </a>
+        </div>
       </div>
 
       <motion.div variants={containerFramer} initial="hidden" animate="show">
