@@ -81,7 +81,7 @@ async def execute_intent(
             result = await _handle_lead_capture(text, entities, user, db, language)
 
         elif intent == IntentType.DATA_QUERY:
-            result = await _handle_data_query(text, user)
+            result = await _handle_data_query(text, user, db)
 
         elif intent == IntentType.HABIT_LOG:
             result = await _handle_habit_log(text, entities, user, db)
@@ -770,12 +770,61 @@ async def _handle_lead_capture(text, entities, user, db, language):
         "notion_url": notion_url
     }
 
-async def _handle_data_query(text, user):
-    """Use Gemini 2.0 Flash-Lite caching/context window to query memory."""
+async def _handle_data_query(text, user, db):
+    """
+    Use Gemini 2.0 Flash-Lite to query memory + local database.
+    Now handles 'What are my pending tasks?' by fetching from UserTask.
+    """
+    from sqlalchemy import select
+    from app.models import UserTask, UserTaskStatus
+
+    task_context = ""
+    
+    # ── 1. Smart Intent Detection for Tasks & Overview ────────────────
+    query_lower = text.lower()
+    is_task_query = any(k in query_lower for k in ["task", "pending", "todo", "incomplete", "yesterday"])
+    is_status_query = any(k in query_lower for k in ["status", "overview", "how is my business", "summary", "stats"])
+
+    if is_task_query:
+        result = await db.execute(
+            select(UserTask).where(
+                UserTask.user_id == user.id,
+                UserTask.status == UserTaskStatus.PENDING
+            ).order_by(UserTask.priority.desc()).limit(10)
+        )
+        tasks = result.scalars().all()
+        if tasks:
+            task_list = "\n".join([f"- {t.description} (Priority: {t.priority.value}, Due: {t.due_date.date() if t.due_date else 'N/A'})" for t in tasks])
+            task_context = f"\n\nREAL-TIME PENDING TASKS FROM DATABASE:\n{task_list}"
+        else:
+            task_context = "\n\n(No pending tasks found in database)"
+    
+    if is_status_query:
+        from sqlalchemy import func
+        from app.models import Client, Expense
+        
+        # Fetch status counts
+        client_count = await db.scalar(select(func.count(Client.id)).where(Client.user_id == user.id))
+        pending_tasks = await db.scalar(select(func.count(UserTask.id)).where(UserTask.user_id == user.id, UserTask.status == UserTaskStatus.PENDING))
+        recent_expenses = await db.scalar(select(func.count(Expense.id)).where(Expense.user_id == user.id))
+        
+        status_context = (
+            f"\n\nBUSINESS DASHBOARD OVERVIEW:\n"
+            f"- Total Managed Clients: {client_count}\n"
+            f"- Pending Action Items: {pending_tasks}\n"
+            f"- Recent Recorded Expenses: {recent_expenses}\n"
+            f"- Current Plan: {user.subscription.plan.value if user.subscription else 'None'}"
+        )
+        task_context += status_context
+
+    # ── 2. AI Synthesis ───────────────────────────────────────────────
     ai_result = await execute_with_ai(
-        f"Answer this query based strictly on the user context and CRM memory:\n\nQuery: {text}",
+        f"Answer this query based on the user context and recent task history provided below.\n\n"
+        f"Context provided: {task_context}\n\n"
+        f"Query: {text}",
         context={"user_context": _get_user_ctx(user), "language": "en"},
     )
+    
     return {
         "summary": f"🔍 {ai_result.get('output', 'Found it.')}"
     }

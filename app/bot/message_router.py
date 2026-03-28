@@ -313,6 +313,16 @@ async def _get_or_create_user(
 
         log.info("user.created", user_id=str(user.id), channel=channel.value)
 
+        # ── 3. Post-Creation Welcome (EA Persona) ───────────────────────────
+        if channel == MessageChannel.TELEGRAM:
+            welcome_msg = (
+                "Namaste! I'm Chaitanya Vora, founder of Vaani OS. 🎙️\n\n"
+                "Welcome to your new *Operational Second Brain*. I've set you up with a 7-day trial of our Starter Plan.\n\n"
+                "You can now send me voice notes or text to manage your business—from GST invoices to task tracking.\n\n"
+                "**Try saying:** _'Remind me to call Gupta ji tomorrow at 10 AM'_ or _'What are my pending tasks?'_"
+            )
+            await send_fn(welcome_msg)
+
     return user
 
 
