@@ -48,16 +48,25 @@ async def whatsapp_incoming(
 
 
 async def _run_route_telegram(parsed: dict):
-    """Standalone session runner for background Telegram processing."""
+    """Standalone session runner with explicit commit for background Telegram processing."""
     from app.database import AsyncSessionLocal
     async with AsyncSessionLocal() as db:
         try:
+            log.info("telegram.background_task_start", chat_id=parsed.get("telegram_chat_id"))
             await route_telegram_message(parsed, db)
-            # Commit is handled inside route_telegram_message logic usually, 
-            # but we ensure session integrity here.
+            await db.commit()
+            log.info("telegram.background_task_complete", chat_id=parsed.get("telegram_chat_id"))
         except Exception as e:
-            log.error("telegram.background_task_error", error=str(e))
+            log.exception("telegram.background_task_error", error=str(e))
             await db.rollback()
+            # Send emergency fail-safe if possible
+            try:
+                from app.bot.telegram import send_telegram_message as tg_send
+                chat_id = parsed.get("telegram_chat_id")
+                if chat_id:
+                    await tg_send(chat_id, "⚠️ _Vaani is experiencing a brief synchronization lag. Please try again in 10s._")
+            except:
+                pass
 
 @router.post("/telegram")
 async def telegram_incoming(

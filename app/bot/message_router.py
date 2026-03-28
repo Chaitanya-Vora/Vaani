@@ -59,11 +59,35 @@ async def route_whatsapp_message(parsed_msg: dict, db: AsyncSession) -> None:
 
 
 async def route_telegram_message(parsed_msg: dict, db: AsyncSession) -> None:
-    """Entry point for Telegram messages."""
+    """Entry point for Telegram messages with Identity Linking support."""
     if not parsed_msg or not parsed_msg.get("telegram_chat_id"):
         return
 
     chat_id = parsed_msg["telegram_chat_id"]
+    text = parsed_msg.get("text", "")
+    
+    # ── 0. IDENTITY LINKING COMMAND ──
+    if text.startswith("/link"):
+        parts = text.split()
+        if len(parts) == 2 and "@" in parts[1]:
+            email = parts[1].lower().strip()
+            # Find dashboard user by email
+            res = await db.execute(select(User).where(User.email == email))
+            dash_user = res.scalar_one_or_none()
+            
+            if dash_user:
+                # Bridge accounts
+                dash_user.telegram_chat_id = chat_id
+                await db.flush()
+                await tg_send(chat_id, f"✅ *Executive Bridge established!*\n\nWelcome back, {dash_user.name or 'Boss'}. Your Telegram ID is now linked to your dashboard account ({email}). Every action you take here will show up on your live dashboard instantly.")
+                return
+            else:
+                await tg_send(chat_id, f"❌ I couldn't find a Vaani account for `{email}`. Please sign up at vaani-nine.vercel.app/auth/signup first.")
+                return
+        else:
+            await tg_send(chat_id, "ℹ️ *Identity Bridge Command*\n\nUsage: `/link your_email@example.com` to sync your bot with your dashboard.")
+            return
+
     await _process_message(
         channel=MessageChannel.TELEGRAM,
         channel_identifier=chat_id,
@@ -76,6 +100,20 @@ async def route_telegram_message(parsed_msg: dict, db: AsyncSession) -> None:
 # ── Core pipeline ─────────────────────────────────────────────────────────────
 
 async def _process_message(
+    channel: MessageChannel,
+    channel_identifier: str,
+    parsed: dict,
+    db: AsyncSession,
+    send_fn,
+) -> None:
+    """Core pipeline with 'Guardian' error handling for resilience."""
+    try:
+        await _process_message_core(channel, channel_identifier, parsed, db, send_fn)
+    except Exception as e:
+        log.exception("message_router.pipeline_failed", error=str(e))
+        await send_fn("⚠️ _Vaani is experiencing a brief synchronization lag. I am still tracking your intent, but I may take longer than usual to respond._")
+
+async def _process_message_core(
     channel: MessageChannel,
     channel_identifier: str,
     parsed: dict,
