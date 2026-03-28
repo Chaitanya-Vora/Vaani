@@ -166,7 +166,7 @@ async def _process_message(
         message_type=msg_type,
         raw_content=parsed.get("text", ""),
         transcribed_content=None,  # Updated after classification if voice
-        media_url=audio_url,
+        media_url=media_url,
         channel_message_id=parsed.get("message_id"),
     )
     db.add(db_message)

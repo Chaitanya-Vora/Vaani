@@ -112,15 +112,15 @@ function DashboardContent() {
       )}
 
       <div className="mb-8 px-1">
-        <h1 className="text-title-1 text-zinc-900">Command Center</h1>
-        <p className="text-body-secondary mt-1">
+        <h1 className="text-3xl font-display font-800 text-zinc-900 tracking-tight">Command center</h1>
+        <p className="text-zinc-500 font-medium text-sm mt-1">
           {user?.business_name} • System Monitoring Active
         </p>
       </div>
 
       <motion.div variants={containerFramer} initial="hidden" animate="show">
         {/* Stats grid (True Square 1:1 with 12px gap) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         {[
           { label: 'AI Actions', value: totalActions, icon: CheckSquare, sub: 'Processed' },
           { label: 'Hours Saved', value: Math.round(Number(totalActions) * 0.25) || 0, icon: Sparkles, sub: 'Efficiency' },
@@ -128,16 +128,16 @@ function DashboardContent() {
           { label: 'Pending', value: commitments.filter(c => c.status !== 'completed').length || 0, icon: Target, sub: 'Tracking' },
         ].map((stat, i) => (
           <motion.div variants={itemFramer} key={i}>
-            <div className="native-card p-5 flex flex-col justify-between hover:border-zinc-300 animate-native-fast cursor-pointer group active:scale-[0.97] min-h-[140px]">
+            <div className="native-card p-3.5 lg:p-5 aspect-square flex flex-col justify-between hover:border-zinc-300 animate-native-fast cursor-pointer group active:scale-[0.97]">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
                   <stat.icon className="w-4 h-4 text-zinc-900" />
                 </div>
-                <span className="text-caption-native text-zinc-400">{stat.label}</span>
+                <span className="text-[10px] lg:text-caption-native font-800 text-zinc-400 uppercase tracking-wider">{stat.label}</span>
               </div>
               <div>
-                <div className="text-4xl font-800 text-zinc-900 tracking-tighter">{stat.value}</div>
-                <div className="text-body-secondary mt-1 sm:block hidden">{stat.sub}</div>
+                <div className="text-3xl lg:text-4xl font-800 text-zinc-900 tracking-tighter">{stat.value}</div>
+                <div className="text-[10px] lg:text-body-secondary font-semibold text-zinc-400 mt-1 sm:block hidden uppercase tracking-widest">{stat.sub}</div>
               </div>
             </div>
           </motion.div>
@@ -149,7 +149,7 @@ function DashboardContent() {
         <motion.div variants={itemFramer} className="lg:col-span-2">
           <div className="native-card p-6 shadow-sm h-full max-w-full overflow-hidden">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-title-2 text-zinc-900">Action Distribution</h2>
+              <h2 className="text-[11px] lg:text-title-2 font-800 text-zinc-400 uppercase tracking-[0.2em]">Action distribution</h2>
             </div>
               <div className="h-64">
                 {intentData.length > 0 ? (

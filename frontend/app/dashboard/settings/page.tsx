@@ -44,13 +44,13 @@ export default function SettingsPage() {
   return (
     <DashboardShell user={user}>
       <div className="mb-8">
-        <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Organization Settings</h1>
+        <h1 className="font-display font-800 text-3xl text-zinc-900 mb-2 tracking-tight">Organization settings</h1>
         <p className="text-zinc-500 font-medium text-base">Manage your executive profile and Vaani operational preferences.</p>
       </div>
 
       <div className="max-w-3xl space-y-8">
         <Card className="bg-white border-zinc-200 shadow-sm p-8 rounded-[2rem]">
-          <h3 className="font-display font-800 text-xl text-zinc-900 mb-6 tracking-tight">Executive Profile</h3>
+          <h3 className="font-display font-800 text-xl text-zinc-900 mb-6 tracking-tight">Executive profile</h3>
           <div className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Input label="Full Name" value={form.name} onChange={set('name')} placeholder="Rajesh Mehta" />
@@ -82,8 +82,8 @@ export default function SettingsPage() {
                 <Volume2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-display font-800 text-xl text-zinc-900 tracking-tight">Voice Intelligence</h3>
-                <p className="text-zinc-500 text-xs font-semibold">Premium Multimodal Feedback (Neural2)</p>
+                <h3 className="font-display font-800 text-xl text-zinc-900 tracking-tight">Voice intelligence</h3>
+                <p className="text-zinc-500 text-xs font-semibold">Premium multimodal feedback (Neural2)</p>
               </div>
             </div>
             <Toggle checked={form.reply_in_audio} onChange={setBool('reply_in_audio')} />
@@ -103,7 +103,7 @@ export default function SettingsPage() {
         </Card>
 
         <Card className="bg-white border-zinc-200 shadow-sm p-8 rounded-[2rem]">
-          <h3 className="font-display font-800 text-xl text-zinc-900 mb-6 tracking-tight">Secure Communications</h3>
+          <h3 className="font-display font-800 text-xl text-zinc-900 mb-6 tracking-tight">Secure communications</h3>
           <div className="space-y-6">
             <div>
               <Input label="WhatsApp Number (+91)" value={form.whatsapp_number}
@@ -147,15 +147,15 @@ export default function SettingsPage() {
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="font-display font-800 text-xl tracking-tight">Executive Training</h3>
-              <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Re-visualize the Vaani Ecosystem</p>
+              <h3 className="font-display font-800 text-xl tracking-tight">Executive training</h3>
+              <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Re-visualize the Vaani ecosystem</p>
             </div>
           </div>
           <button 
-            onClick={() => { localStorage.removeItem('vaani-onboarded-v2'); window.location.href = '/dashboard'; }}
+            onClick={() => { localStorage.removeItem('vaani-onboarded-v3'); window.location.href = '/dashboard'; }}
             className="bg-white text-zinc-900 font-display font-800 text-xs uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-zinc-100 transition-all active:scale-95 shadow-lg"
           >
-            Watch Guided Tour
+            Watch guided tour
           </button>
         </div>
 
