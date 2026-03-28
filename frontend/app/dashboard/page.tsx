@@ -9,6 +9,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts'
 import { api } from '@/lib/api'
 import DashboardShell from '@/components/layout/DashboardShell'
+import OnboardingTutorial from '@/components/dashboard/OnboardingTutorial'
 
 const INTENT_LABELS: Record<string, { label: string; color: string }> = {
   save_note:        { label: 'Note / Idea Dump', color: 'bg-zinc-100 text-zinc-900 border-zinc-200' },
@@ -89,6 +90,7 @@ function DashboardContent() {
 
   return (
     <DashboardShell user={user}>
+      <OnboardingTutorial />
       {/* Welcome banner (Solid Premium) */}
       {welcome && (
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-zinc-200 rounded-[2rem] p-7 mb-10 flex items-start gap-5 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">

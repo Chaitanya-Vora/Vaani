@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Save, MessageCircle, Phone, Volume2 } from 'lucide-react'
+import { Save, MessageCircle, Phone, Volume2, Sparkles } from 'lucide-react'
 import { api } from '@/lib/api'
 import DashboardShell from '@/components/layout/DashboardShell'
 import { Card, Button, Input, Select, Spinner, Toggle } from '@/components/ui'
@@ -140,6 +140,24 @@ export default function SettingsPage() {
             ))}
           </ol>
         </Card>
+        
+        <div className="bg-[#18181b] border-zinc-800 p-8 rounded-[2rem] text-white flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center shadow-lg border border-zinc-700">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-display font-800 text-xl tracking-tight">Executive Training</h3>
+              <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Re-visualize the Vaani Ecosystem</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => { localStorage.removeItem('vaani-onboarded-v2'); window.location.href = '/dashboard'; }}
+            className="bg-white text-zinc-900 font-display font-800 text-xs uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-zinc-100 transition-all active:scale-95 shadow-lg"
+          >
+            Watch Guided Tour
+          </button>
+        </div>
 
         <div className="flex items-center gap-4 pt-2">
           <Button onClick={save} loading={saving} size="lg" className="px-8 font-bold">

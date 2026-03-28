@@ -6,7 +6,7 @@ import { clsx } from 'clsx'
 import {
   LayoutDashboard, Users, Zap, Plug, CreditCard,
   LogOut, Menu, X, Send, ChevronRight,
-  Target, Zap as ZapIcon, LayoutPanelLeft, Lightbulb, CheckCircle
+  Target, Zap as ZapIcon, LayoutPanelLeft, Lightbulb, CheckCircle, Settings
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clearToken } from '@/lib/api'
@@ -19,6 +19,7 @@ const NAV = [
   { href: '/dashboard/clients',      icon: Users,           label: 'Lead Sniper CRM' },
   { href: '/dashboard/automations',  icon: Zap,             label: 'Automations' },
   { href: '/dashboard/integrations', icon: Plug,            label: 'Integrations' },
+  { href: '/dashboard/settings',     icon: Settings,        label: 'AI Settings & Voice' },
   { href: '/dashboard/billing',      icon: CreditCard,      label: 'Billing' },
 ]
 
