@@ -94,7 +94,7 @@ export default function SetupPage() {
                 <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-6">
                   <p className="text-sm font-medium text-zinc-600 mb-4 text-center">To securely link your account, simply send your registered email to the Vaani Bot.</p>
                   <a
-                    href="https://t.me/vaani_os_bot"
+                    href="https://t.me/Chaitanya_VaaniBot"
                     target="_blank"
                     rel="noopener"
                     className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-display font-800 py-4 rounded-2xl transition-all shadow-sm flex items-center justify-center gap-3 text-base"
@@ -213,7 +213,7 @@ export default function SetupPage() {
 
               <div className="space-y-3">
                 <a
-                  href="https://t.me/vaani_os_bot"
+                  href="https://t.me/Chaitanya_VaaniBot"
                   target="_blank"
                   rel="noreferrer"
                   className="block w-full bg-[#0088cc] hover:bg-[#0077b5] shadow-sm text-white font-display font-800 py-4 rounded-2xl transition-all text-center text-base flex items-center justify-center gap-2"

@@ -118,7 +118,7 @@ function DashboardContent() {
 
       <motion.div variants={containerFramer} initial="hidden" animate="show">
         {/* Stats grid (True Square 1:1 with 12px gap) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         {[
           { label: 'AI Actions', value: totalActions, icon: CheckSquare, sub: 'Processed' },
           { label: 'Hours Saved', value: Math.round(Number(totalActions) * 0.25) || 0, icon: Sparkles, sub: 'Efficiency' },
@@ -126,7 +126,7 @@ function DashboardContent() {
           { label: 'Pending', value: commitments.filter(c => c.status !== 'completed').length || 0, icon: Target, sub: 'Tracking' },
         ].map((stat, i) => (
           <motion.div variants={itemFramer} key={i}>
-            <div className="native-card aspect-square p-5 flex flex-col justify-between hover:border-zinc-300 animate-native-fast cursor-pointer group active:scale-[0.97]">
+            <div className="native-card p-5 flex flex-col justify-between hover:border-zinc-300 animate-native-fast cursor-pointer group active:scale-[0.97] min-h-[140px]">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
                   <stat.icon className="w-4 h-4 text-zinc-900" />
@@ -145,7 +145,7 @@ function DashboardContent() {
       {/* Heatmap & Commitments Grid (16px Card Radius / Title 2) */}
       <div className="grid lg:grid-cols-3 gap-6 mb-8">
         <motion.div variants={itemFramer} className="lg:col-span-2">
-          <div className="native-card p-6 shadow-sm h-full">
+          <div className="native-card p-6 shadow-sm h-full max-w-full overflow-hidden">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-title-2 text-zinc-900">Action Distribution</h2>
             </div>
@@ -178,7 +178,7 @@ function DashboardContent() {
           </motion.div>
 
         <motion.div variants={itemFramer} className="h-full">
-          <div className="native-card p-6 shadow-sm h-full flex flex-col">
+          <div className="native-card p-6 shadow-sm h-full flex flex-col max-w-full overflow-hidden">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-title-2 text-zinc-900 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-500" /> Commitments
@@ -206,7 +206,7 @@ function DashboardContent() {
 
       <div className="grid lg:grid-cols-3 gap-6 mb-6">
         <motion.div variants={itemFramer} className="lg:col-span-2">
-          <div className="native-card p-5 sm:p-8 shadow-sm h-full">
+          <div className="native-card p-5 sm:p-8 shadow-sm h-full max-w-full overflow-hidden">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-title-2 text-zinc-900 flex items-center gap-2 uppercase tracking-tight">
                 <TrendingUp className="w-5 h-5 text-zinc-900" /> Action Log
@@ -239,7 +239,7 @@ function DashboardContent() {
           </motion.div>
 
         <motion.div variants={itemFramer}>
-          <div className="native-card p-8 shadow-sm h-full flex flex-col items-center justify-center text-center">
+          <div className="native-card p-8 shadow-sm h-full flex flex-col items-center justify-center text-center max-w-full overflow-hidden">
             <h2 className="text-title-2 text-zinc-900 w-full text-left mb-6">Task Capacity</h2>
               <div className="w-full h-48 relative">
                 <ResponsiveContainer width="100%" height="100%">
@@ -263,7 +263,7 @@ function DashboardContent() {
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
                   <span className="text-3xl font-display font-900 text-zinc-900">
-                    {Math.round(((user?.tasks_used || 0) / (user?.tasks_limit || 50)) * 100)}%
+                    {user?.tasks_limit === 999999 ? '∞' : `${Math.round(((user?.tasks_used || 0) / (user?.tasks_limit || 50)) * 100)}%`}
                   </span>
                 </div>
               </div>

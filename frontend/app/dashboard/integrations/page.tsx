@@ -23,7 +23,7 @@ const INTEGRATIONS = [
     id: 'telegram', name: 'Telegram Bot', icon: '💬',
     desc: 'Your primary interface for the Beta launch. Connect to the bot to start delegating instantly.',
     category: 'Messaging', required: true,
-    connectUrl: () => 'https://t.me/vaani_os_bot',
+    connectUrl: () => 'https://t.me/Chaitanya_VaaniBot',
   },
   {
     id: 'whatsapp', name: 'WhatsApp Business', icon: '💬',

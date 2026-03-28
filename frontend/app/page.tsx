@@ -165,7 +165,7 @@ export default function LandingPage() {
               <Link href="/auth/signup" className="inline-flex items-center justify-center gap-2 bg-zinc-900 text-white font-semibold px-8 py-4 rounded-full transition-all hover:bg-zinc-800 shadow-xl shadow-zinc-900/10 text-base">
                 Start Delegating on Telegram
               </Link>
-              <a href="https://t.me/vaani_os_bot" target="_blank" rel="noopener" className="inline-flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-700 font-semibold px-8 py-4 rounded-full transition-all hover:bg-zinc-50 hover:border-zinc-300 text-base shadow-sm">
+              <a href="https://t.me/Chaitanya_VaaniBot" target="_blank" rel="noopener" className="inline-flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-700 font-semibold px-8 py-4 rounded-full transition-all hover:bg-zinc-50 hover:border-zinc-300 text-base shadow-sm">
                 <Send className="w-4 h-4 text-sky-500" /> Open Telegram Bot
               </a>
             </div>
