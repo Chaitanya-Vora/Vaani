@@ -90,19 +90,21 @@ export default function DashboardLayout({ children, user }: { children: React.Re
 
       {/* User + logout */}
       <div className="px-3 pb-4 border-t border-zinc-200 pt-3">
-        <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 transition-all cursor-pointer">
+        <button 
+          onClick={logout}
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 transition-all group"
+        >
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-zinc-200 flex items-center justify-center flex-shrink-0">
               <span className="text-zinc-900 font-bold text-sm">{user?.name?.[0]?.toUpperCase() || 'V'}</span>
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 text-left">
               <p className="text-zinc-900 text-xs font-bold truncate">{user?.name || 'User'}</p>
+              <p className="text-zinc-400 text-[10px] font-medium">Log out</p>
             </div>
           </div>
-          <button onClick={logout} className="text-zinc-400 hover:text-red-500 transition-colors">
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
+          <LogOut className="w-4 h-4 text-zinc-400 group-hover:text-red-500 transition-colors" />
+        </button>
       </div>
     </aside>
   )

@@ -38,7 +38,7 @@ export default function LoginPage() {
           <p className="text-zinc-500 font-medium text-sm">Log in to your command center</p>
         </div>
 
-        <div className="bg-white border border-zinc-200/80 rounded-[2rem] p-8 shadow-xl shadow-zinc-200/40">
+        <div className="bg-white border border-zinc-200/80 rounded-[2rem] p-8 shadow-xl shadow-zinc-200/40 relative z-50">
           {error && <div className="bg-red-50 border border-red-100 text-red-600 font-medium text-sm rounded-xl px-4 py-3 mb-5">{error}</div>}
           <form onSubmit={submit} className="space-y-4">
             <Input label="Email address" type="email" placeholder="you@company.com" required
@@ -47,11 +47,18 @@ export default function LoginPage() {
               <Input label="Password" type={showPw ? 'text' : 'password'} placeholder="••••••••" required
                 value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
               <button type="button" onClick={() => setShowPw(!showPw)}
-                className="absolute right-3 top-[38px] text-zinc-400 hover:text-zinc-600 transition-colors">
+                className="absolute right-3 top-[41px] text-zinc-400 hover:text-zinc-600 transition-colors">
                 {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <Button type="submit" loading={loading} className="w-full mt-2" size="lg">Sign In</Button>
+            <Button type="submit" loading={loading} className="w-full mt-2" size="lg">
+              {loading ? 'Entering Vaani...' : 'Sign In'}
+            </Button>
+            {loading && (
+              <p className="text-[10px] text-zinc-400 text-center font-medium animate-pulse mt-1">
+                Note: First login may take 10-15s while the server wakes up.
+              </p>
+            )}
           </form>
           <p className="text-center font-medium text-zinc-500 text-sm mt-6">
             Don't have an account?{' '}
