@@ -61,15 +61,15 @@ export default function ClientsPage() {
           const status = c.tags?.length > 0 ? c.tags[0] : 'Lead';
           return (
           <motion.div variants={itemFramer} key={c.id}>
-            <Card className="native-card group relative p-5 h-full flex flex-col active:scale-[0.98] transition-all">
+            <div className="native-card group relative p-5 h-full flex flex-col active:scale-[0.98] transition-all animate-native-fast overflow-hidden">
               <div className="flex justify-between items-start mb-5 relative z-10">
                 <div className="flex items-center gap-4 flex-1">
-                  <div className="w-11 h-11 rounded-[12px] bg-zinc-900 flex items-center justify-center font-800 text-white native-border shadow-sm text-lg">
+                  <div className="w-11 h-11 rounded-lg bg-zinc-900 flex items-center justify-center font-800 text-white native-border shadow-sm text-lg">
                     {c.name.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-700 text-zinc-900 text-[17px] truncate tracking-tight">{c.name}</h3>
-                    <p className="text-caption-native text-zinc-400 mt-0.5 truncate">{c.company || 'Unknown Entity'}</p>
+                    <p className="text-body-secondary mt-0.5 truncate uppercase tracking-wide font-800 text-[10px]">{c.company || 'Unknown Entity'}</p>
                   </div>
                 </div>
                 <div className="flex gap-2 items-center flex-shrink-0">
@@ -77,20 +77,20 @@ export default function ClientsPage() {
                 </div>
               </div>
 
-              <div className="space-y-3 flex-1 relative z-10">
-                <div className="flex items-center gap-3 text-sm font-500 text-zinc-600 truncate">
+              <div className="space-y-3 flex-1 relative z-10 font-body">
+                <div className="flex items-center gap-3 text-body-secondary truncate">
                   <Mail className="w-4 h-4 text-zinc-400" /> {c.email || 'No email associated'}
                 </div>
-                <div className="flex items-center gap-3 text-sm font-500 text-zinc-600 truncate">
+                <div className="flex items-center gap-3 text-body-secondary truncate">
                   <Phone className="w-4 h-4 text-zinc-400" /> {c.phone || 'No phone configured'}
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center text-caption-native text-zinc-400 relative z-10 tracking-wide">
+              <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center text-body-secondary relative z-10">
                 <span>Last action: <span className="text-zinc-900 font-700">{c.last_contacted ? new Date(c.last_contacted).toLocaleDateString() : 'Pending'}</span></span>
                 <span className="cursor-pointer hover:text-zinc-900 transition-colors text-zinc-900 flex items-center gap-1 font-800">Notion <ExternalLink className="w-3.5 h-3.5" /></span>
               </div>
-            </Card>
+            </div>
           </motion.div>
         )})}
       </motion.div>

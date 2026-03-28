@@ -117,38 +117,38 @@ function DashboardContent() {
       </div>
 
       <motion.div variants={containerFramer} initial="hidden" animate="show">
-        {/* Stats grid (True Square 1:1) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-          {[
-            { label: 'AI Actions', value: totalActions, icon: CheckSquare, sub: 'Processed' },
-            { label: 'Hours Saved', value: Math.round(Number(totalActions) * 0.25) || 0, icon: Sparkles, sub: 'Efficiency' },
-            { label: 'CRM Leads', value: stats?.clients || 0, icon: Users, sub: 'Captured' },
-            { label: 'Pending', value: commitments.filter(c => c.status !== 'completed').length || 0, icon: Target, sub: 'Tracking' },
-          ].map((stat, i) => (
-            <motion.div variants={itemFramer} key={i}>
-              <div className="native-card aspect-square p-5 flex flex-col justify-between hover:border-zinc-300 transition-all cursor-pointer group active:scale-[0.97]">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-[12px] bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
-                    <stat.icon className="w-4 h-4 text-zinc-900" />
-                  </div>
-                  <span className="text-caption-native text-zinc-400">{stat.label}</span>
+        {/* Stats grid (True Square 1:1 with 12px gap) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        {[
+          { label: 'AI Actions', value: totalActions, icon: CheckSquare, sub: 'Processed' },
+          { label: 'Hours Saved', value: Math.round(Number(totalActions) * 0.25) || 0, icon: Sparkles, sub: 'Efficiency' },
+          { label: 'CRM Leads', value: stats?.clients || 0, icon: Users, sub: 'Captured' },
+          { label: 'Pending', value: commitments.filter(c => c.status !== 'completed').length || 0, icon: Target, sub: 'Tracking' },
+        ].map((stat, i) => (
+          <motion.div variants={itemFramer} key={i}>
+            <div className="native-card aspect-square p-5 flex flex-col justify-between hover:border-zinc-300 animate-native-fast cursor-pointer group active:scale-[0.97]">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
+                  <stat.icon className="w-4 h-4 text-zinc-900" />
                 </div>
-                <div>
-                  <div className="text-4xl font-800 text-zinc-900 tracking-tighter">{stat.value}</div>
-                  <div className="text-body-secondary font-500 mt-1 sm:block hidden">{stat.sub}</div>
-                </div>
+                <span className="text-caption-native text-zinc-400">{stat.label}</span>
               </div>
-            </motion.div>
-          ))}
-        </div>
+              <div>
+                <div className="text-4xl font-800 text-zinc-900 tracking-tighter">{stat.value}</div>
+                <div className="text-body-secondary mt-1 sm:block hidden">{stat.sub}</div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
 
-        {/* Heatmap & Commitments Grid */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          <motion.div variants={itemFramer} className="lg:col-span-2">
-            <div className="bg-white native-border rounded-[20px] p-6 shadow-sm h-full">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-title-2 text-zinc-900">Action Distribution</h2>
-              </div>
+      {/* Heatmap & Commitments Grid (16px Card Radius / Title 2) */}
+      <div className="grid lg:grid-cols-3 gap-6 mb-8">
+        <motion.div variants={itemFramer} className="lg:col-span-2">
+          <div className="native-card p-6 shadow-sm h-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-title-2 text-zinc-900">Action Distribution</h2>
+            </div>
               <div className="h-64">
                 {intentData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
@@ -177,13 +177,13 @@ function DashboardContent() {
             </div>
           </motion.div>
 
-          <motion.div variants={itemFramer} className="h-full">
-            <div className="bg-white native-border rounded-[20px] p-6 shadow-sm h-full flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-title-2 text-zinc-900 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-orange-500" /> Commitments
-                </h2>
-              </div>
+        <motion.div variants={itemFramer} className="h-full">
+          <div className="native-card p-6 shadow-sm h-full flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-title-2 text-zinc-900 flex items-center gap-2">
+                <Target className="w-5 h-5 text-orange-500" /> Commitments
+              </h2>
+            </div>
               <div className="space-y-4 flex-1">
                 {commitments.length === 0 && (
                   <p className="text-body-secondary mt-2">No active commitments found.</p>
@@ -204,14 +204,14 @@ function DashboardContent() {
           </motion.div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          <motion.div variants={itemFramer} className="lg:col-span-2">
-            <div className="bg-white border border-zinc-200 rounded-[2rem] p-5 sm:p-8 shadow-sm h-full">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-display font-900 text-lg sm:text-xl text-zinc-900 flex items-center gap-2 tracking-tight uppercase">
-                  <TrendingUp className="w-5 h-5 text-zinc-900" /> Action Log
-                </h2>
-              </div>
+      <div className="grid lg:grid-cols-3 gap-6 mb-6">
+        <motion.div variants={itemFramer} className="lg:col-span-2">
+          <div className="native-card p-5 sm:p-8 shadow-sm h-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-title-2 text-zinc-900 flex items-center gap-2 uppercase tracking-tight">
+                <TrendingUp className="w-5 h-5 text-zinc-900" /> Action Log
+              </h2>
+            </div>
               <div className="space-y-2">
                 {stats?.recent_tasks?.length > 0 ? stats.recent_tasks.map((t: any) => {
                   const meta = INTENT_LABELS[t.intent] || { label: t.intent, color: 'bg-zinc-100 text-zinc-800 border-zinc-200' }
@@ -238,9 +238,9 @@ function DashboardContent() {
             </div>
           </motion.div>
 
-          <motion.div variants={itemFramer}>
-            <div className="bg-white border border-zinc-200 rounded-[2rem] p-8 shadow-sm h-full flex flex-col items-center justify-center text-center">
-              <h2 className="font-display font-800 text-xl text-zinc-900 tracking-tight w-full text-left mb-6">Task Capacity</h2>
+        <motion.div variants={itemFramer}>
+          <div className="native-card p-8 shadow-sm h-full flex flex-col items-center justify-center text-center">
+            <h2 className="text-title-2 text-zinc-900 w-full text-left mb-6">Task Capacity</h2>
               <div className="w-full h-48 relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>

@@ -53,11 +53,11 @@ export default function CommitmentsPage() {
         )}
         {commitments.map(c => (
           <motion.div variants={itemFramer} key={c.id}>
-            <Card className="flex items-center gap-4 native-card p-5 transition-all cursor-pointer group active:scale-[0.98]">
+            <div className="native-card flex items-center gap-4 p-5 transition-all cursor-pointer group active:scale-[0.98] animate-native-fast">
               <div className={`w-12 h-12 rounded-[14px] flex items-center justify-center flex-shrink-0 border shadow-sm ${
                 c.status === 'completed' ? 'bg-zinc-50 text-green-500 border-zinc-100' : 
                 c.status === 'missed' ? 'bg-red-50 text-red-500 border-red-100' : 
-                'bg-[#1d9e751a] text-[#1d9e75] border-[#1d9e7533]'
+                'bg-zinc-900 text-white border-zinc-900'
               }`}>
                 {c.status === 'completed' ? <CheckCircle className="w-5 h-5" /> : 
                  c.status === 'missed' ? <Clock className="w-5 h-5" /> : 
@@ -69,7 +69,7 @@ export default function CommitmentsPage() {
                   <p className="text-body-native font-700 text-zinc-900 tracking-tight break-words whitespace-normal leading-tight">{c.desc}</p>
                   <span className="w-fit text-caption-native text-zinc-500 bg-zinc-50 px-2 py-0.5 rounded-md border border-zinc-100">{c.type}</span>
                 </div>
-                <p className="text-body-secondary text-[13px] font-500">Recipient: <span className="text-zinc-900 font-700">{c.recipient}</span></p>
+                <p className="text-body-secondary font-500">Recipient: <span className="text-zinc-900 font-700">{c.recipient}</span></p>
               </div>
 
               <div className="text-right flex-shrink-0 flex flex-col items-end">
@@ -79,11 +79,11 @@ export default function CommitmentsPage() {
                 } className="mb-2 text-caption-native px-2 py-0.5">
                   {c.status === 'missed' ? 'Breached' : c.status}
                 </Badge>
-                <p className="text-body-secondary text-[11px] font-700 bg-zinc-50 px-2 py-1 border border-zinc-100 rounded-md">
+                <div className="text-body-secondary text-[11px] font-700 bg-zinc-50 px-2 py-1 border border-zinc-100 rounded-lg">
                   {new Date(c.due).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                </p>
+                </div>
               </div>
-            </Card>
+            </div>
           </motion.div>
         ))}
       </motion.div>

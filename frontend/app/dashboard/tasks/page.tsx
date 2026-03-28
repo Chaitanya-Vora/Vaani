@@ -57,12 +57,12 @@ export default function TasksPage() {
         
         {tasks.map(t => (
           <motion.div variants={itemFramer} key={t.id}>
-            <Card className="flex items-center gap-4 native-card transition-all cursor-pointer group p-5 active:scale-[0.98]">
+            <div className="native-card flex items-center gap-4 transition-all cursor-pointer group p-5 active:scale-[0.98] animate-native-fast">
               <div className="flex-shrink-0">
                 {t.status === 'completed' ? (
                   <CheckCircle2 className="w-6 h-6 text-zinc-300" />
                 ) : (
-                  <Circle className={`w-6 h-6 ${t.priority === 'high' ? 'text-red-500' : t.priority === 'medium' ? 'text-[#1d9e75]' : 'text-zinc-300'}`} />
+                  <Circle className={`w-6 h-6 ${t.priority === 'high' ? 'text-red-500' : t.priority === 'medium' ? 'text-zinc-900' : 'text-zinc-300'}`} />
                 )}
               </div>
               
@@ -71,7 +71,7 @@ export default function TasksPage() {
                   {t.description}
                 </p>
                 {t.due_date && (
-                  <div className="flex items-center gap-1.5 mt-2 text-body-secondary text-[13px] font-500">
+                  <div className="flex items-center gap-1.5 mt-2 text-body-secondary font-500">
                     <Clock className="w-4 h-4 text-zinc-400" />
                     <span>Due: {new Date(t.due_date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
@@ -79,16 +79,16 @@ export default function TasksPage() {
               </div>
 
               <div className="text-right flex-shrink-0">
-                 <span className={`text-caption-native px-2 py-0.5 rounded-md ${
-                   t.status === 'completed' ? 'bg-zinc-50 text-zinc-400' :
-                   t.priority === 'high' ? 'bg-red-50 text-red-600' : 
-                   t.priority === 'medium' ? 'bg-[#1d9e751a] text-[#1d9e75]' : 
-                   'bg-zinc-100 text-zinc-500'
+                 <span className={`text-caption-native px-2 py-0.5 rounded-md border ${
+                   t.status === 'completed' ? 'bg-zinc-50 text-zinc-400 border-zinc-100' :
+                   t.priority === 'high' ? 'bg-red-50 text-red-600 border-red-100' : 
+                   t.priority === 'medium' ? 'bg-zinc-900 text-white border-zinc-900' : 
+                   'bg-zinc-100 text-zinc-500 border-zinc-200'
                  }`}>
                    {t.priority}
                  </span>
               </div>
-            </Card>
+            </div>
           </motion.div>
         ))}
       </motion.div>

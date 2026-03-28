@@ -53,19 +53,30 @@ export default function DashboardLayout({ children, user }: { children: React.Re
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-6 space-y-1">
         {NAV.map(({ href, icon: Icon, label }) => {
           const active = path === href || (href !== '/dashboard' && path.startsWith(href))
           return (
             <Link key={href} href={href} onClick={() => setOpen(false)}
               className={clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150',
-                active
-                  ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/60'
-                  : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100/50',
+                'group relative flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold animate-native-fast',
+                active ? 'text-zinc-900' : 'text-zinc-500 hover:text-zinc-900'
               )}>
-              <Icon className={clsx("w-4 h-4 flex-shrink-0", active ? "text-zinc-900" : "")} />
-              {label}
+              {/* Pill Indicator (56x28px logic) */}
+              {active && (
+                <motion.div 
+                  layoutId="nav-pill"
+                  className="absolute inset-y-1.5 left-2 w-[56px] bg-zinc-100 rounded-full -z-10"
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.3 }}
+                />
+              )}
+              <div className={clsx(
+                "w-9 h-9 flex items-center justify-center rounded-lg transition-colors",
+                active ? "" : "group-hover:bg-zinc-100/50"
+              )}>
+                <Icon className={clsx("w-4 h-4 flex-shrink-0", active ? "text-zinc-900" : "text-zinc-400")} />
+              </div>
+              <span className="relative z-10">{label}</span>
             </Link>
           )
         })}
@@ -131,14 +142,14 @@ export default function DashboardLayout({ children, user }: { children: React.Re
           return (
             <Link key={href} href={href} className="flex-1 flex flex-col items-center gap-1 group">
               <div className={clsx(
-                "w-14 h-7 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out",
-                active ? "bg-[#1d9e751a] text-[#1d9e75]" : "text-zinc-400 group-hover:text-zinc-600"
+                "w-14 h-7 rounded-full flex items-center justify-center animate-native-medium",
+                active ? "bg-zinc-900 text-white" : "text-zinc-400 group-hover:bg-zinc-100"
               )}>
                 <Icon className={clsx("w-5 h-5", active ? "stroke-[2.5px]" : "stroke-[2px]")} />
               </div>
               <span className={clsx(
                 "text-caption-native leading-none mt-1 transition-colors duration-200",
-                active ? "text-[#1d9e75] font-800" : "text-zinc-400 font-500"
+                active ? "text-zinc-900 font-800" : "text-zinc-400 font-500"
               )}>{label}</span>
             </Link>
           )
@@ -209,7 +220,7 @@ export default function DashboardLayout({ children, user }: { children: React.Re
         </header>
 
         <main className={clsx(
-          "flex-1 p-5 lg:p-10 bg-white",
+          "flex-1 p-4 lg:p-10 bg-white",
           "pb-28 lg:pb-10" // Leave space for Bottom Nav on mobile
         )}>
           {children}

@@ -58,11 +58,11 @@ export default function IdeasPage() {
         
         {ideas.map(i => (
           <motion.div variants={itemFramer} key={i.id} className="h-full">
-            <Card className="flex flex-col h-full active:scale-[0.98] transition-all cursor-pointer group p-5 native-card">
+            <div className="native-card flex flex-col h-full active:scale-[0.98] transition-all cursor-pointer group p-5 animate-native-fast">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-caption-native text-zinc-500 bg-zinc-50 px-2.5 py-1 rounded-md border border-zinc-100">{i.category || 'General'}</span>
                 {i.notion_url && (
-                   <a href={i.notion_url} target="_blank" rel="noreferrer" className="text-zinc-300 hover:text-zinc-900 transition-colors">
+                   <a href={i.notion_url} target="_blank" rel="noreferrer" className="text-zinc-300 hover:text-zinc-900 transition-colors relative z-10">
                      <ExternalLink className="w-4 h-4" />
                    </a>
                 )}
@@ -70,11 +70,11 @@ export default function IdeasPage() {
               <p className="text-body-native font-500 text-zinc-800 leading-relaxed flex-1">
                 {i.content}
               </p>
-              <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-between text-body-secondary text-[13px] font-500">
+              <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-between text-body-secondary font-500">
                 <span>{new Date(i.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 <Lightbulb className="w-4 h-4 opacity-50 text-zinc-400" />
               </div>
-            </Card>
+            </div>
           </motion.div>
         ))}
       </motion.div>
