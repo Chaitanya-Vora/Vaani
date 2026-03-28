@@ -120,23 +120,25 @@ function DashboardContent() {
 
       <motion.div variants={containerFramer} initial="hidden" animate="show">
         {/* Stats grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {[
-            { label: 'AI Actions Processed', value: totalActions, icon: CheckSquare, sub: 'Operations completed' },
-            { label: 'Hours of Work Saved', value: Math.round(Number(totalActions) * 0.25) || 0, icon: Sparkles, sub: 'Assumes 15m per task' },
-            { label: 'CRM Leads Extracted', value: stats?.clients || 0, icon: Users, sub: 'Auto-captured from voice' },
-            { label: 'Pending Commitments', value: commitments.filter(c => c.status !== 'completed').length || 0, icon: Target, sub: 'Actively tracking' },
+            { label: 'AI Actions', value: totalActions, icon: CheckSquare, sub: 'Processed' },
+            { label: 'Hours Saved', value: Math.round(Number(totalActions) * 0.25) || 0, icon: Sparkles, sub: 'Efficiency' },
+            { label: 'CRM Leads', value: stats?.clients || 0, icon: Users, sub: 'Captured' },
+            { label: 'Pending', value: commitments.filter(c => c.status !== 'completed').length || 0, icon: Target, sub: 'Tracking' },
           ].map((stat, i) => (
             <motion.div variants={itemFramer} key={i}>
-              <div className="bg-white border border-zinc-200 rounded-[1.5rem] p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow h-full">
-                <div className="flex items-center gap-2 sm:gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
-                    <stat.icon className="w-4 h-4 text-zinc-700" />
+              <div className="bg-white border border-zinc-200 rounded-2xl p-3 sm:p-5 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col justify-between">
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <div className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
+                    <stat.icon className="w-3.5 h-3.5 text-zinc-900" />
                   </div>
-                  <span className="text-[9px] sm:text-xs font-bold text-zinc-500 uppercase tracking-wide leading-tight">{stat.label}</span>
+                  <span className="text-[8px] sm:text-xs font-800 text-zinc-400 uppercase tracking-widest leading-tight">{stat.label}</span>
                 </div>
-                <div className="text-xl sm:text-2xl font-display font-800 text-zinc-900 tracking-tight">{stat.value}</div>
-                <div className="text-[10px] text-zinc-400 font-medium mt-1 leading-tight">{stat.sub}</div>
+                <div>
+                  <div className="text-lg sm:text-2xl font-display font-900 text-zinc-900 tracking-tight leading-none">{stat.value}</div>
+                  <div className="text-[10px] text-zinc-400 font-bold mt-1 leading-tight sm:block hidden">{stat.sub}</div>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -211,35 +213,32 @@ function DashboardContent() {
 
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
           <motion.div variants={itemFramer} className="lg:col-span-2">
-            <div className="bg-white border border-zinc-200 rounded-[2rem] p-8 shadow-sm h-full">
+            <div className="bg-white border border-zinc-200 rounded-[2rem] p-5 sm:p-8 shadow-sm h-full">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-display font-800 text-xl text-zinc-900 flex items-center gap-2 tracking-tight">
-                  <TrendingUp className="w-5 h-5 text-zinc-900" /> Operational Action Log
+                <h2 className="font-display font-900 text-lg sm:text-xl text-zinc-900 flex items-center gap-2 tracking-tight uppercase">
+                  <TrendingUp className="w-5 h-5 text-zinc-900" /> Action Log
                 </h2>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {stats?.recent_tasks?.length > 0 ? stats.recent_tasks.map((t: any) => {
                   const meta = INTENT_LABELS[t.intent] || { label: t.intent, color: 'bg-zinc-100 text-zinc-800 border-zinc-200' }
                   return (
-                    <div key={t.id} className="flex items-center gap-5 py-3 border-b border-zinc-50 hover:bg-zinc-50 px-4 rounded-2xl transition-colors last:border-0 cursor-pointer">
-                      <div className={`flex-shrink-0 text-[11px] font-bold tracking-wide uppercase px-3 py-1.5 rounded-lg border ${meta.color} w-36 text-center shadow-sm`}>
+                    <div key={t.id} className="flex items-center gap-3 sm:gap-5 py-2.5 sm:py-3 border-b border-zinc-50 hover:bg-zinc-50 px-3 sm:px-4 rounded-xl sm:rounded-2xl transition-colors last:border-0 cursor-pointer active:scale-[0.99]">
+                      <div className={`flex-shrink-0 text-[9px] sm:text-[11px] font-800 tracking-widest uppercase px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg border ${meta.color} w-24 sm:w-36 text-center shadow-sm truncate`}>
                         {meta.label}
                       </div>
                       <div className="flex-1 min-w-0 flex items-center justify-between">
-                        <p className="text-zinc-900 text-[15px] font-semibold truncate pr-4">{t.summary || 'Processing operation...'}</p>
-                        <p className="text-zinc-400 text-[11px] font-bold whitespace-nowrap hidden sm:block">
+                        <p className="text-zinc-900 text-sm sm:text-[15px] font-bold truncate pr-2 sm:pr-4">{t.summary || 'Operation logged'}</p>
+                        <p className="text-zinc-400 text-[9px] sm:text-[11px] font-800 whitespace-nowrap hidden sm:block">
                           {new Date(t.created_at).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
                     </div>
                   )
                 }) : (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Mic className="w-8 h-8 text-zinc-300" />
-                    </div>
-                    <p className="text-zinc-900 text-base font-bold">No operations processed yet.</p>
-                    <p className="text-zinc-500 text-sm font-medium mt-1">Send a voice note or image to Vaani on WhatsApp to see it appear here.</p>
+                  <div className="text-center py-10">
+                    <Mic className="w-8 h-8 text-zinc-200 mx-auto mb-3" />
+                    <p className="text-zinc-900 text-sm font-bold">No operations yet.</p>
                   </div>
                 )}
               </div>

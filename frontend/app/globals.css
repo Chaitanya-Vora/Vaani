@@ -5,6 +5,7 @@
 @layer base {
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
+  body { @apply text-zinc-900 bg-white antialiased; }
 
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -12,9 +13,17 @@
   ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
 }
 
+@layer components {
+  .glass {
+    @apply backdrop-blur-md bg-white/80 border-t border-zinc-200/50;
+  }
+}
+
 @layer utilities {
   .font-500 { font-weight: 500; }
   .font-600 { font-weight: 600; }
   .font-700 { font-weight: 700; }
   .font-800 { font-weight: 800; }
+  .font-900 { font-weight: 900; }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 }
