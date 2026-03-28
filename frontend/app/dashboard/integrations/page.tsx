@@ -8,9 +8,10 @@ import { Card, Button, Badge, Spinner } from '@/components/ui'
 const INTEGRATIONS = [
   {
     id: 'notion', name: 'Notion', icon: '📓',
-    desc: 'Your Operational Second Brain. All notes, tasks, CRM entries, and compliance records sync securely here. REQUIRED.',
-    category: 'Core', required: true,
+    desc: 'Your Operational Second Brain. All notes, tasks, CRM entries, and compliance records sync securely here.',
+    category: 'Core', required: false,
     connectUrl: (userId: string) => `/api/auth/notion/connect?state=${userId}`,
+    comingSoon: true,
   },
   {
     id: 'google_calendar', name: 'Google Workspace', icon: '📅',
@@ -19,24 +20,17 @@ const INTEGRATIONS = [
     connectUrl: (userId: string) => `/api/auth/google/connect?state=${userId}`,
   },
   {
-    id: 'zoho_crm', name: 'Zoho CRM', icon: '👥',
-    desc: 'Client interactions sync natively to Zoho. The most adopted CRM for scaling organizations.',
-    category: 'CRM', required: false,
-    connectUrl: () => '#',
-    comingSoon: false,
-  },
-  {
-    id: 'tally', name: 'Tally', icon: '📊',
-    desc: 'Export expense data automatically in Tally XML format. Ready for direct accountant import.',
-    category: 'Accounting', required: false,
-    connectUrl: () => '#',
-    comingSoon: true,
+    id: 'telegram', name: 'Telegram Bot', icon: '💬',
+    desc: 'Your primary interface for the Beta launch. Connect to the bot to start delegating instantly.',
+    category: 'Messaging', required: true,
+    connectUrl: () => 'https://t.me/vaani_os_bot',
   },
   {
     id: 'whatsapp', name: 'WhatsApp Business', icon: '💬',
-    desc: 'Your primary interface. Connect your number so Vaani can act proactively as your EA.',
-    category: 'Messaging', required: true,
+    desc: 'Deep WhatsApp integration for enterprise scaling. Currently in Meta approval queue.',
+    category: 'Messaging', required: false,
     connectUrl: () => 'https://business.whatsapp.com',
+    comingSoon: true,
   },
   {
     id: 'linkedin', name: 'LinkedIn', icon: '💼',

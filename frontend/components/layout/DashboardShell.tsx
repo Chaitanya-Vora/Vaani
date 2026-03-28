@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { clsx } from 'clsx'
 import {
   LayoutDashboard, Users, Zap, Plug, CreditCard,
-  LogOut, Menu, X, MessageCircle, ChevronRight,
+  LogOut, Menu, X, Send, ChevronRight,
   Target, Zap as ZapIcon, LayoutPanelLeft, Lightbulb, CheckCircle
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -152,10 +152,10 @@ export default function DashboardLayout({ children, user }: { children: React.Re
         </button>
       </nav>
 
-      {/* WhatsApp FAB (Mobile Only) */}
-      <a href="https://wa.me/" target="_blank" rel="noopener"
+      {/* Telegram FAB (Mobile Only) */}
+      <a href="https://t.me/vaani_os_bot" target="_blank" rel="noopener"
         className="fixed bottom-24 right-5 z-[90] lg:hidden w-12 h-12 bg-zinc-900 rounded-full shadow-xl flex items-center justify-center border border-zinc-800 active:scale-95 transition-transform">
-        <MessageCircle className="w-6 h-6 text-green-500 fill-green-500/20" />
+        <Send className="w-5 h-5 text-white" />
       </a>
 
       {/* Mobile Sidebar Overlay (for "More") */}
@@ -192,10 +192,10 @@ export default function DashboardLayout({ children, user }: { children: React.Re
           </div>
           <div className="flex items-center gap-3">
              <div className="hidden lg:flex items-center gap-2">
-                <a href="https://wa.me/" target="_blank" rel="noopener"
+                <a href="https://t.me/vaani_os_bot" target="_blank" rel="noopener"
                   className="flex items-center gap-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 transition-colors bg-white border border-zinc-200 shadow-sm rounded-full px-4 py-2 hover:shadow-md">
-                  <MessageCircle className="w-4 h-4 text-green-500" />
-                  Open WhatsApp
+                  <Send className="w-4 h-4 text-zinc-900" />
+                  Open Telegram Bot
                 </a>
              </div>
              <div className="w-8 h-8 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center lg:hidden overflow-hidden">

@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, MessageCircle, Database, Zap, ArrowRight, Copy, ExternalLink } from 'lucide-react'
+import { CheckCircle, MessageCircle, Database, Zap, ArrowRight, Copy, ExternalLink, Send } from 'lucide-react'
 import { api } from '@/lib/api'
 
 const NOTION_OAUTH_URL =
@@ -14,7 +14,7 @@ const NOTION_OAUTH_URL =
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_VAANI_WHATSAPP || '+91XXXXXXXXXX'
 
 const STEPS = [
-  { id: 'whatsapp', icon: MessageCircle, label: 'Connect WhatsApp', color: '#25D366' },
+  { id: 'telegram', icon: Send,          label: 'Connect Telegram',  color: '#0088cc' },
   { id: 'notion',   icon: Database,      label: 'Connect Notion',   color: '#000000' },
   { id: 'test',     icon: Zap,           label: 'Send Action',      color: '#000000' },
 ]
@@ -22,28 +22,9 @@ const STEPS = [
 export default function SetupPage() {
   const router = useRouter()
   const [step, setStep] = useState(0)
-  const [waNumber, setWaNumber] = useState('')
-  const [waLinked, setWaLinked] = useState(false)
+  const [telegramLinked, setTelegramLinked] = useState(false)
   const [notionLinked, setNotionLinked] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [copied, setCopied] = useState(false)
-
-  const copyNumber = () => {
-    navigator.clipboard.writeText(WHATSAPP_NUMBER)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const saveWhatsApp = async () => {
-    if (!waNumber.match(/^\+?\d{10,13}$/)) return
-    setSaving(true)
-    try {
-      await api.dashboard.update({ whatsapp_number: waNumber })
-      setWaLinked(true)
-    } finally {
-      setSaving(false)
-    }
-  }
 
   const connectNotion = () => {
     window.location.href = NOTION_OAUTH_URL
@@ -96,69 +77,55 @@ export default function SetupPage() {
         {/* Step card */}
         <AnimatePresence mode="wait">
 
-          {/* Step 0: WhatsApp */}
+          {/* Step 0: Telegram */}
           {step === 0 && (
-            <motion.div key="wa" {...fade} className="bg-white border border-zinc-200/80 rounded-[2rem] p-8 shadow-xl shadow-zinc-200/40">
+            <motion.div key="tg" {...fade} className="bg-white border border-zinc-200/80 rounded-[2rem] p-8 shadow-xl shadow-zinc-200/40">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-[14px] flex items-center justify-center bg-green-50 border border-green-100">
-                  <MessageCircle className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 rounded-[14px] flex items-center justify-center bg-blue-50 border border-blue-100">
+                  <Send className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h2 className="font-display font-800 text-xl text-zinc-900 tracking-tight">Connect WhatsApp</h2>
-                  <p className="text-zinc-500 font-medium text-sm mt-0.5">Register your primary contact number</p>
+                  <h2 className="font-display font-800 text-xl text-zinc-900 tracking-tight">Connect Telegram</h2>
+                  <p className="text-zinc-500 font-medium text-sm mt-0.5">Primary interface for the Beta launch</p>
                 </div>
               </div>
 
               <div className="space-y-6">
-                <div>
-                  <label className="text-xs font-display font-800 text-zinc-500 uppercase tracking-widest mb-2.5 block px-1">
-                    Your WhatsApp Number
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="+1 234 567 8900"
-                    value={waNumber}
-                    onChange={e => setWaNumber(e.target.value)}
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-5 py-4 text-zinc-900 font-mono text-base font-medium focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
-                  />
-                  <p className="text-zinc-400 font-medium text-xs mt-2.5 ml-1">Must include country code (e.g. +1 for US, +44 for UK).</p>
-                </div>
-
                 <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-6">
-                  <p className="text-sm font-medium text-zinc-600 mb-3">Then save the Vaani Agent number on your device:</p>
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-base bg-white border border-zinc-200 px-3 py-1.5 rounded-lg text-zinc-900 font-bold tracking-tight">{WHATSAPP_NUMBER}</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={copyNumber}
-                        className="text-xs font-bold text-zinc-500 hover:text-zinc-900 flex items-center gap-1.5 transition-colors bg-white border border-zinc-200 px-3 py-1.5 rounded-lg"
-                      >
-                        <Copy className="w-4 h-4" />
-                        {copied ? 'Copied' : 'Copy'}
-                      </button>
-                    </div>
-                  </div>
+                  <p className="text-sm font-medium text-zinc-600 mb-4 text-center">To securely link your account, simply send your registered email to the Vaani Bot.</p>
+                  <a
+                    href="https://t.me/vaani_os_bot"
+                    target="_blank"
+                    rel="noopener"
+                    className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-display font-800 py-4 rounded-2xl transition-all shadow-sm flex items-center justify-center gap-3 text-base"
+                    onClick={() => setTelegramLinked(true)}
+                  >
+                    <Send className="w-5 h-5" />
+                    Open Telegram Assistant
+                  </a>
                 </div>
 
-                <button
-                  onClick={saveWhatsApp}
-                  disabled={!waNumber || saving}
-                  className="w-full bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-display font-800 py-4 rounded-2xl transition-all shadow-sm flex items-center justify-center gap-2 text-base mt-2"
-                >
-                  {saving ? 'Registering...' : 'Save & Continue'}
-                  {!saving && <ArrowRight className="w-5 h-5" />}
-                </button>
+                <div className="bg-white border border-zinc-100 rounded-2xl p-5 shadow-sm">
+                   <p className="text-[11px] font-display font-800 text-zinc-400 uppercase tracking-widest mb-3">Your instructions</p>
+                   <p className="text-zinc-700 font-medium text-sm leading-relaxed">
+                     1. Tap the button above to open the bot.<br/>
+                     2. Click <strong>/start</strong>.<br/>
+                     3. Type your login email so I can sync your stats.
+                   </p>
+                </div>
 
-                {waLinked && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="flex justify-between items-center bg-green-50 border border-green-200 p-4 rounded-2xl text-green-700 text-sm font-bold">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5" /> Secured.
-                    </div>
-                    <button onClick={() => setStep(1)} className="text-zinc-900 font-800 text-sm hover:underline pr-1">
-                      Proceed Next →
-                    </button>
-                  </motion.div>
+                {telegramLinked ? (
+                  <button
+                    onClick={() => setStep(1)}
+                    className="w-full bg-brand text-white font-display font-800 py-4 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 text-base"
+                  >
+                    Confirm & Continue
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                ) : (
+                  <button disabled className="w-full bg-zinc-100 text-zinc-400 font-display font-800 py-4 rounded-2xl cursor-not-allowed">
+                    Link with Bot to continue
+                  </button>
                 )}
               </div>
             </motion.div>
@@ -246,12 +213,13 @@ export default function SetupPage() {
 
               <div className="space-y-3">
                 <a
-                  href={`https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}?text=Tell%20me%20my%20tasks%20for%20today`}
+                  href="https://t.me/vaani_os_bot"
                   target="_blank"
                   rel="noreferrer"
-                  className="block w-full bg-[#128C7E] hover:bg-[#075E54] shadow-sm text-white font-display font-800 py-4 rounded-2xl transition-all text-center text-base"
+                  className="block w-full bg-[#0088cc] hover:bg-[#0077b5] shadow-sm text-white font-display font-800 py-4 rounded-2xl transition-all text-center text-base flex items-center justify-center gap-2"
                 >
-                  Send a Voice Note on WhatsApp
+                  <Send className="w-5 h-5" />
+                  Send your first message on Telegram
                 </a>
 
                 <button

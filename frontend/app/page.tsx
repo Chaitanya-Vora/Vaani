@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Mic, BrainCircuit, Target, Share2, Receipt,
   ArrowRight, CheckCircle, Menu, X, Database,
-  Zap, ArrowUpRight, Activity, Play, Lightbulb
+  Zap, ArrowUpRight, Activity, Play, Lightbulb, Send
 } from 'lucide-react'
 
 const FEATURES = [
@@ -62,8 +62,8 @@ const PLANS = [
 const WA_DEMOS = [
   { from: 'user', text: '🎙️ [Voice 0:14] — "Please send the commercial proposal to Sharma & Associates tomorrow at 10 AM, and remind me if they haven\'t replied."' },
   { from: 'vaani', text: '🎯 Commitment logged for tomorrow 10:00 AM.\n\n📋 Proposal: Sharma & Associates.\n⏰ Follow-up scheduled for Friday.\n🔗 [View in Command Center]' },
-  { from: 'user', text: 'Structure a business plan: An automated auditing platform for CA firms.' },
-  { from: 'vaani', text: '✅ Strategy Document Created: *Automated Auditing Platform*\n\nIncludes Market Analysis, Deployment Strategy, and Action Items.\n🔗 [Open in Corporate Library]' },
+  { from: 'user', text: 'Sync to Notion: An automated auditing platform for CA firms.' },
+  { from: 'vaani', text: '✅ Syncing... [Marked as Upcoming]\n\nCorporate Library integration is arriving soon for Beta users.' },
 ]
 
 export default function LandingPage() {
@@ -158,16 +158,16 @@ export default function LandingPage() {
             </h1>
             
             <p className="text-zinc-500 text-lg sm:text-xl leading-relaxed mb-10 max-w-2xl font-medium">
-              Delegate all your busy work. Note taking, active task management, CRM updates, and invoicing — seamlessly updated from a single voice note.
+              Delegate all your busy work. Note taking, active task management, CRM updates, and invoicing — seamlessly updated from a single voice note on Telegram.
             </p>
 
             <div className="flex flex-wrap gap-4 items-center justify-center mb-16">
               <Link href="/auth/signup" className="inline-flex items-center justify-center gap-2 bg-zinc-900 text-white font-semibold px-8 py-4 rounded-full transition-all hover:bg-zinc-800 shadow-xl shadow-zinc-900/10 text-base">
-                Start Delegating For Free
+                Start Delegating on Telegram
               </Link>
-              <Link href="#demo" className="inline-flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-700 font-semibold px-8 py-4 rounded-full transition-all hover:bg-zinc-50 hover:border-zinc-300 text-base shadow-sm">
-                <Play className="w-4 h-4 fill-current" /> Watch Demo
-              </Link>
+              <a href="https://t.me/vaani_os_bot" target="_blank" rel="noopener" className="inline-flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-700 font-semibold px-8 py-4 rounded-full transition-all hover:bg-zinc-50 hover:border-zinc-300 text-base shadow-sm">
+                <Send className="w-4 h-4 text-sky-500" /> Open Telegram Bot
+              </a>
             </div>
           </motion.div>
 
@@ -183,8 +183,8 @@ export default function LandingPage() {
                   <div className="w-3 h-3 rounded-full bg-green-400" />
                 </div>
                 <div className="text-sm font-semibold text-zinc-800 flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-brand flex items-center justify-center"><Zap className="w-3 h-3 text-white" /></div>
-                  Vaani Assistant
+                  <div className="w-5 h-5 rounded-md bg-sky-500 flex items-center justify-center shadow-inner"><Send className="w-3 h-3 text-white" /></div>
+                  Vaani Assistant (Telegram)
                 </div>
               </div>
 
