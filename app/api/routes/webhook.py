@@ -53,12 +53,21 @@ async def telegram_incoming(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
-    """Receive Telegram updates."""
-    payload = await request.json()
-    parsed = parse_telegram_update(payload)
-    if parsed:
-        background_tasks.add_task(route_telegram_message, parsed, db)
-    return {"status": "ok"}
+    """Receive Telegram updates with executive heartbeat logging."""
+    try:
+        payload = await request.json()
+        log.info("telegram.incoming", update_id=payload.get("update_id"))
+        
+        parsed = parse_telegram_update(payload)
+        if parsed:
+            # We use background tasks, but we need to ensure the router doesn't crash
+            background_tasks.add_task(route_telegram_message, parsed, db)
+        
+        return {"status": "ok"}
+    except Exception as e:
+        log.error("telegram.webhook_error", error=str(e))
+        # Don't return error to Telegram (to avoid retries), but log it internally
+        return {"status": "error", "detail": "Incident logged"}
 
 
 @router.post("/automation/{user_id}/{automation_id}")
