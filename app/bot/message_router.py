@@ -67,8 +67,10 @@ async def route_telegram_message(parsed_msg: dict, db: AsyncSession) -> None:
     chat_id = parsed_msg["telegram_chat_id"]
     text = parsed_msg.get("text", "")
     
-    # ── 0. IDENTITY LINKING COMMAND ──
-    if text.startswith("/link"):
+    # ── 0. IDENTITY LINKING COMMAND & GUIDANCE ──
+    clean_text = text.lower().strip()
+    
+    if clean_text.startswith("/link"):
         parts = text.split()
         if len(parts) == 2 and "@" in parts[1]:
             email = parts[1].lower().strip()
@@ -92,6 +94,11 @@ async def route_telegram_message(parsed_msg: dict, db: AsyncSession) -> None:
         else:
             await tg_send(chat_id, "ℹ️ *Identity Bridge Command*\n\nUsage: `/link your_email@example.com` to sync your bot with your dashboard.")
             return
+
+    # Friendly Onboarding for 'Hi'
+    if clean_text in ["hi", "hello", "hey", "namaste"]:
+        await tg_send(chat_id, "Namaste! 🎙️ I'm your Vaani Executive Assistant.\n\nTo sync this bot with your dashboard and see your profile name, please send:\n\n`/link your_email@example.com`")
+        return
 
     await _process_message(
         channel=MessageChannel.TELEGRAM,
