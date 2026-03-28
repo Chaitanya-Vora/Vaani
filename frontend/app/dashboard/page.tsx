@@ -221,7 +221,7 @@ function DashboardContent() {
 
       <div className="grid lg:grid-cols-3 gap-6 mb-6">
         <motion.div variants={itemFramer} className="lg:col-span-2">
-          <div className="native-card p-5 sm:p-8 shadow-sm h-full max-w-full overflow-hidden">
+          <div className="native-card p-5 sm:p-8 shadow-sm lg:h-full max-w-full lg:overflow-hidden">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-display font-800 text-zinc-900 tracking-tight flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-zinc-900" /> Action log
@@ -254,7 +254,7 @@ function DashboardContent() {
           </motion.div>
 
         <motion.div variants={itemFramer}>
-          <div className="native-card p-8 shadow-sm h-full flex flex-col items-center justify-start text-center max-w-full overflow-hidden">
+          <div className="native-card p-8 shadow-sm lg:h-full flex flex-col items-center justify-start text-center max-w-full lg:overflow-hidden">
             <div className="w-full mb-10">
               <h2 className="text-xl font-display font-800 text-zinc-900 tracking-tight text-left">Task capacity</h2>
             </div>

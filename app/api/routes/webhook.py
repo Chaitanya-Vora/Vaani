@@ -47,11 +47,22 @@ async def whatsapp_incoming(
     return {"status": "ok"}
 
 
+async def _run_route_telegram(parsed: dict):
+    """Standalone session runner for background Telegram processing."""
+    from app.database import AsyncSessionLocal
+    async with AsyncSessionLocal() as db:
+        try:
+            await route_telegram_message(parsed, db)
+            # Commit is handled inside route_telegram_message logic usually, 
+            # but we ensure session integrity here.
+        except Exception as e:
+            log.error("telegram.background_task_error", error=str(e))
+            await db.rollback()
+
 @router.post("/telegram")
 async def telegram_incoming(
     request: Request,
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db),
 ):
     """Receive Telegram updates with synchronous heartbeat for reliability."""
     try:
@@ -65,8 +76,8 @@ async def telegram_incoming(
             from app.bot.telegram import send_telegram_message as tg_send
             await tg_send(chat_id, "⚡ _Processing your request..._")
             
-            # Now proceed with heavy AI routing in the background
-            background_tasks.add_task(route_telegram_message, parsed, db)
+            # Now proceed with heavy AI routing in a managed background session
+            background_tasks.add_task(_run_route_telegram, parsed)
         
         return {"status": "ok"}
     except Exception as e:
