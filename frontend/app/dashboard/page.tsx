@@ -12,13 +12,13 @@ import DashboardShell from '@/components/layout/DashboardShell'
 import OnboardingTutorial from '@/components/dashboard/OnboardingTutorial'
 
 const INTENT_LABELS: Record<string, { label: string; color: string }> = {
-  save_note:        { label: 'Note / Idea Dump', color: 'bg-zinc-100 text-zinc-900 border-zinc-200' },
+  save_note:        { label: 'Note / idea dump', color: 'bg-zinc-100 text-zinc-900 border-zinc-200' },
   commitment_capture:{ label: 'Commitment',      color: 'bg-orange-50 text-orange-700 border-orange-200' },
-  lead_capture:     { label: 'Lead Capture',     color: 'bg-green-50 text-green-700 border-green-200' },
-  habit_log:        { label: 'Habit Logged',    color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+  lead_capture:     { label: 'Lead capture',     color: 'bg-green-50 text-green-700 border-green-200' },
+  habit_log:        { label: 'Habit logged',    color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
   create_task:      { label: 'Task created',    color: 'bg-blue-50 text-blue-700 border-blue-200' },
   log_meeting:      { label: 'Meeting',  color: 'bg-purple-50 text-purple-700 border-purple-200' },
-  update_crm:       { label: 'CRM updated',     color: 'bg-zinc-100 text-zinc-800 border-zinc-200' },
+  update_crm:       { label: 'Crm updated',     color: 'bg-zinc-100 text-zinc-800 border-zinc-200' },
   generate_invoice: { label: 'Invoice created', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
 }
 
@@ -133,7 +133,7 @@ function DashboardContent() {
                 <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center flex-shrink-0">
                   <stat.icon className="w-4 h-4 text-zinc-900" />
                 </div>
-                <span className="text-[10px] lg:text-caption-native font-800 text-zinc-400 tracking-wider">
+                <span className="text-[11px] lg:text-xs font-semibold text-zinc-400">
                   {stat.label.charAt(0).toUpperCase() + stat.label.slice(1).toLowerCase()}
                 </span>
               </div>
@@ -245,8 +245,8 @@ function DashboardContent() {
           </motion.div>
 
         <motion.div variants={itemFramer}>
-          <div className="native-card p-8 shadow-sm h-full flex flex-col items-center justify-center text-center max-w-full overflow-hidden">
-            <div className="w-full mb-6">
+          <div className="native-card p-8 shadow-sm h-full flex flex-col items-center justify-start text-center max-w-full overflow-hidden">
+            <div className="w-full mb-10">
               <h2 className="text-xl font-display font-800 text-zinc-900 tracking-tight text-left">Task capacity</h2>
             </div>
               <div className="w-full h-48 relative">
