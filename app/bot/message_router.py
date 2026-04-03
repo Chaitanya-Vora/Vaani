@@ -100,6 +100,20 @@ async def route_telegram_message(parsed_msg: dict, db: AsyncSession) -> None:
         await tg_send(chat_id, "Namaste! 🎙️ I'm your Vaani Executive Assistant.\n\nTo sync this bot with your dashboard and see your profile name, please send:\n\n`/link your_email@example.com`")
         return
 
+    # Voice/Text Preference Toggles
+    if clean_text in ["/voice", "/text"]:
+        # Find user
+        res = await db.execute(select(User).where(User.telegram_chat_id == chat_id))
+        user_pref = res.scalar_one_or_none()
+        if user_pref:
+            user_pref.reply_in_audio = (clean_text == "/voice")
+            await db.flush()
+            mode = "Voice 🎙️" if user_pref.reply_in_audio else "Text 📝"
+            await tg_send(chat_id, f"✅ Preferences updated! I will now reply to you in {mode}.")
+        else:
+            await tg_send(chat_id, "⚠️ I couldn't find your account. Please say 'hi' to start!")
+        return
+
     await _process_message(
         channel=MessageChannel.TELEGRAM,
         channel_identifier=chat_id,

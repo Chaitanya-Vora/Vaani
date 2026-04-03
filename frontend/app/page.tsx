@@ -27,7 +27,7 @@ const FEATURES = [
   },
   {
     icon: Receipt, title: 'Voice-Activated Invoicing',
-    desc: 'Say what you sold. We instantly generate a perfect, GST-ready PDF invoice and send it directly via WhatsApp.',
+    desc: 'Say what you sold. We instantly generate a perfect, GST-ready PDF invoice and send it directly via Telegram.',
   },
   {
     icon: Activity, title: 'Your Personal Dashboard',
@@ -152,7 +152,7 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            <h1 className="font-display font-800 text-5xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight mb-6 text-zinc-900">
+            <h1 className="font-display font-800 text-5xl md:text-7xl leading-[1.05] tracking-tight mb-6 text-zinc-900">
               Your AI Intern, <br className="hidden sm:block" />
               <span className="text-zinc-400">One Message Away.</span>
             </h1>
@@ -217,8 +217,8 @@ export default function LandingPage() {
         {/* We duplicate the array exactly once so that translateX(-50%) creates a seamless infinite loop without gaps */}
         <div className="flex animate-marquee gap-16 w-max items-center px-10">
           {[
-            'Microsoft Teams', 'Outlook', 'Google Workspace', 'WhatsApp', 'Notion', 'Slack', 'Zoho CRM', 'Tally', 'Razorpay',
-            'Microsoft Teams', 'Outlook', 'Google Workspace', 'WhatsApp', 'Notion', 'Slack', 'Zoho CRM', 'Tally', 'Razorpay'
+            'Microsoft Teams', 'Outlook', 'Google Workspace', 'Telegram', 'Notion', 'Slack', 'Zoho CRM', 'Tally', 'Razorpay',
+            'Microsoft Teams', 'Outlook', 'Google Workspace', 'Telegram', 'Notion', 'Slack', 'Zoho CRM', 'Tally', 'Razorpay'
           ].map((name, i) => (
             <span key={i} className="text-zinc-800 text-xl font-display font-bold tracking-tight whitespace-nowrap opacity-30 hover:opacity-100 transition-opacity flex items-center gap-2 grayscale hover:grayscale-0">
               {name}
@@ -254,7 +254,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="font-display font-800 text-4xl sm:text-5xl mb-6 tracking-tight text-zinc-900">How Vaani actually works.</h2>
-            <p className="text-zinc-500 text-xl font-medium">No complex setups. Just use WhatsApp like you normally do.</p>
+            <p className="text-zinc-500 text-xl font-medium">No complex setups. Just use Telegram like you normally do.</p>
           </div>
           
           <div className="space-y-16">
@@ -265,7 +265,7 @@ export default function LandingPage() {
                 <h3 className="text-3xl font-display font-800 text-zinc-900 mb-4 tracking-tight">The "I promise to do this" Tracker</h3>
                 <p className="text-zinc-500 text-lg font-medium leading-relaxed">
                   Ever told a client "I'll send the quote tomorrow at 2 PM" and completely forgot? 
-                  When you send that exact voice note to Vaani, it actively tracks the deadline. The next day at 1:55 PM, it pings your WhatsApp: <em>"Hey, did you send that quote?"</em>
+                  When you send that exact voice note to Vaani, it actively tracks the deadline. The next day at 1:55 PM, it pings your Telegram: <em>"Hey, did you send that quote?"</em>
                 </p>
               </div>
               <div className="bg-zinc-50 rounded-[2rem] p-6 border border-zinc-100 shadow-inner">
@@ -353,7 +353,7 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-zinc-900 text-white rounded-2xl flex items-center justify-center font-bold text-xl mb-6 shadow-sm">5</div>
                 <h3 className="text-3xl font-display font-800 text-zinc-900 mb-4 tracking-tight">The Active Priority Queue</h3>
                 <p className="text-zinc-500 text-lg font-medium leading-relaxed">
-                  Start your morning by listing 3 things you <i>must</i> get done today. We arrange them by priority into your command center, and proactively ping your WhatsApp checking in on your high priorities before you sleep.
+                  Start your morning by listing 3 things you <i>must</i> get done today. We arrange them by priority into your command center, and proactively ping your Telegram checking in on your high priorities before you sleep.
                 </p>
               </div>
               <div className="bg-zinc-50 rounded-[2rem] p-6 border border-zinc-100 shadow-inner space-y-3">

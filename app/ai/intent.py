@@ -88,6 +88,7 @@ INTENT TYPES (Hinglish Supported):
 - IDEA_DUMP: "Shower thought: referral loops", "Idea for new SaaS"
 - ADD_TASKS: "I need to call Rahul today, and draft the NDA tomorrow"
 - QUERY_IDEAS: "What was my idea about marketing?", "Show me my recent ideas"
+- SAVE_MEMORY: "Remember my PAN is ABC1234E", "Note down my son's name is Rohan"
 - save_note: General information saving
 - create_task: Single action item
 - set_reminder: Explicit time-based
@@ -126,6 +127,8 @@ JSON format:
     "follow_up_date": null or "YYYY-MM-DD",
     "gst_rate": null or number,
     "compliance_type": null or string,
+    "memory_key": null or string (The subject of the memory, e.g. 'PAN', "Son's name"),
+    "memory_value": null or string (The actual fact/value),
     "tasks_list": [{"description": string, "priority": "high|medium|low", "due_date": "YYYY-MM-DD"}]
   },
   "urgency": "low|medium|high",

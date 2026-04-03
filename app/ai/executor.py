@@ -41,7 +41,10 @@ async def execute_intent(
         result = {}
 
         # ── Route to handler ─────────────────────────────────────────────────
-        if intent == IntentType.SAVE_NOTE:
+        if intent == IntentType.SAVE_MEMORY:
+            result = await _handle_save_memory(text, entities, user, db, language)
+
+        elif intent == IntentType.SAVE_NOTE:
             result = await _handle_save_note(text, entities, user, language, plan)
 
         elif intent == IntentType.CREATE_TASK:
@@ -127,6 +130,31 @@ async def execute_intent(
 
 
 # ── Handlers ──────────────────────────────────────────────────────────────────
+
+async def _handle_save_memory(text, entities, user, db, language):
+    """Save explicit memory to the database for future context."""
+    from app.models import Memory
+    
+    key = entities.get("memory_key")
+    value = entities.get("memory_value")
+    
+    if not key or not value:
+        # Fallback extraction if Gemini didn't structure it perfectly
+        key = "Fact"
+        value = text
+
+    memory = Memory(
+        user_id=user.id,
+        key=key,
+        value=value
+    )
+    db.add(memory)
+    await db.flush()
+    
+    return {
+        "summary": f"✅ Got it. I will remember: *{key}* ({value})",
+        "memory_key": key
+    }
 
 async def _handle_save_note(text, entities, user, language, plan):
     """Voice/text dump → structured note → Notion."""
