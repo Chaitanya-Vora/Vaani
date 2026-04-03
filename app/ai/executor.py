@@ -290,6 +290,18 @@ async def _handle_set_reminder(text, entities, user, language):
         channel=user.whatsapp_number and "whatsapp" or "telegram",
     )
 
+    google_integration = _get_integration(user, "google_calendar")
+    if google_integration and reminder_date:
+        from app.integrations import google_calendar
+        try:
+            await google_calendar.create_task(
+                access_token=google_integration.access_token,
+                title=f"Reminder: {title}",
+                due_date=reminder_date.split("T")[0] if "T" in reminder_date else reminder_date
+            )
+        except Exception as e:
+            log.error("calendar.task_error", error=str(e))
+
     return {
         "summary": f"⏰ Reminder set: *{title}* on {reminder_date}",
         "celery_task_id": task.id,
@@ -489,13 +501,29 @@ Return JSON: {{subject, body, tone}}""",
 
     # Auto-send via Gmail if requested
     gmail_integration = _get_integration(user, "gmail")
-    auto_send = "send" in text.lower() and gmail_integration
-
+    auto_send_req = "send" in text.lower()
+    auto_sent = False
+    
+    if auto_send_req and gmail_integration:
+        to_email = entities.get("email")
+        if to_email:
+            from app.integrations import gmail
+            try:
+                auto_sent = await gmail.send_email(
+                    access_token=gmail_integration.access_token,
+                    to=to_email,
+                    subject=email_data.get('subject', 'Update'),
+                    body=email_data.get('body', '')
+                )
+            except Exception as e:
+                log.error("gmail.send_error", error=str(e))
+                
+    status = "sent to " + str(entities.get("email")) if auto_sent else "drafted"
     return {
-        "summary": f"✅ Email drafted: *{email_data.get('subject')}*",
+        "summary": f"✅ Email {status}: *{email_data.get('subject')}*",
         "notion_url": notion_url,
         "email": email_data,
-        "auto_sent": False,
+        "auto_sent": auto_sent,
     }
 
 
