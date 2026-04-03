@@ -279,6 +279,10 @@ async def _process_message_core(
     await _increment_usage(user, db)
 
     # ── 10. Generate WhatsApp-friendly response ───────────────────────────────
+    if execution_result.get("error"):
+        await send_fn("⚠️ " + execution_result.get("summary", "Something went wrong."))
+        return
+
     response_text = execution_result.get("summary")
     
     # Unleash True Finesse using generate_response for standard intents

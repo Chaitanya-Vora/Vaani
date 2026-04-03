@@ -23,8 +23,8 @@ if settings.GOOGLE_API_KEY:
     genai.configure(api_key=settings.GOOGLE_API_KEY)
 
 async def _call_gemini(system: str, prompt: str, max_tokens: int = 2000) -> str:
-    """Unified Gemini 2.0 Flash call — replaces Claude temporarily."""
-    model = genai.GenerativeModel("gemini-2.0-flash", system_instruction=system)
+    """Unified Gemini 1.5 Flash call — robust and stable."""
+    model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=system)
     response = await model.generate_content_async(
         prompt,
         generation_config=genai.GenerationConfig(max_output_tokens=max_tokens)
@@ -217,7 +217,7 @@ async def classify_intent(
             prompt = f"User context: {context_str}\n{history_ctx}\nAnalyze the attached image. If it's a business card, extract Name, Company, Phone, Email, Role and classify as LEAD_CAPTURE. If it's an invoice/receipt, extract amounts/vendor and set intent to LOG_EXPENSE. Provide a concise 'original_text' describing what was found. Original user text: {text}"
 
     try:
-        model = genai.GenerativeModel("gemini-2.0-flash-lite", system_instruction=INTENT_CLASSIFIER_SYSTEM)
+        model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=INTENT_CLASSIFIER_SYSTEM)
         
         contents = [prompt]
         if media_bytes and media_type:
@@ -279,7 +279,7 @@ If it's in Hindi/mixed, respond in the same style."""
         return await _call_gemini(system, prompt, max_tokens=300)
     except Exception as e:
         log.error("response_gen.error", error=str(e))
-        return "✅ Done! Saved to your Notion workspace."
+        return "✅ Operation complete."
 
 
 async def execute_with_ai(
@@ -303,7 +303,7 @@ async def execute_with_ai(
         return {
             "output": output,
             "tokens": 0,
-            "model": "gemini-2.0-flash",
+            "model": "gemini-1.5-flash",
         }
     except Exception as e:
         log.error("ai_execute.error", error=str(e))
