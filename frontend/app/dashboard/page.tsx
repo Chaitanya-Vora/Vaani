@@ -143,7 +143,7 @@ function DashboardContent() {
                   <stat.icon className="w-4 h-4 text-zinc-900" />
                 </div>
                 <span className="text-[11px] lg:text-xs font-semibold text-zinc-400">
-                  {stat.label.charAt(0).toUpperCase() + stat.label.slice(1).toLowerCase()}
+                  {stat.label}
                 </span>
               </div>
               <div>

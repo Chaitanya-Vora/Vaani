@@ -40,8 +40,8 @@ export default function ClientsPage() {
             Forward a VCF card or raw voice note on WhatsApp to auto-inject leads here.
           </p>
         </div>
-        <button className="bg-zinc-900 hover:bg-zinc-800 text-white text-sm font-700 px-6 py-2.5 rounded-full transition-all shadow-sm w-full sm:w-auto active:scale-95">
-          + Add Lead Manually
+        <button disabled className="bg-zinc-400 text-white text-sm font-700 px-6 py-2.5 rounded-full shadow-sm w-full sm:w-auto cursor-not-allowed">
+          + Add Lead (Coming Soon)
         </button>
       </div>
 
@@ -52,7 +52,7 @@ export default function ClientsPage() {
               icon={Users}
               title="No verified leads captured yet"
               description="Forward a standard VCF card or a voice note on WhatsApp to log your first lead automatically."
-              actionLabel="+ Add Lead Manually"
+              actionLabel="+ Add Lead (Coming Soon)"
               onAction={() => console.log('Add lead')}
             />
           </div>

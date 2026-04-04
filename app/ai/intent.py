@@ -23,13 +23,23 @@ if settings.GOOGLE_API_KEY:
     genai.configure(api_key=settings.GOOGLE_API_KEY)
 
 async def _call_gemini(system: str, prompt: str, max_tokens: int = 2000) -> str:
-    """Unified Gemini 1.5 Flash call — robust and stable."""
-    model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=system)
-    response = await model.generate_content_async(
-        prompt,
-        generation_config=genai.GenerationConfig(max_output_tokens=max_tokens)
-    )
-    return response.text.strip()
+    """Unified Gemini call with automatic failover."""
+    models_to_try = ["gemini-2.5-flash", "gemini-flash-lite-latest", "gemini-flash-latest"]
+    last_error = None
+    
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(model_name, system_instruction=system)
+            response = await model.generate_content_async(
+                prompt,
+                generation_config=genai.GenerationConfig(max_output_tokens=max_tokens)
+            )
+            return response.text.strip()
+        except Exception as e:
+            last_error = e
+            continue
+            
+    raise RuntimeError(f"All Gemini models exhausted quota/failed. Last error: {str(last_error)}")
 
 # ── Security Middleware ────────────────────────────────────────────────────────
 
@@ -219,16 +229,36 @@ async def classify_intent(
         elif "image" in media_type:
             prompt = f"User context: {context_str}\n{history_ctx}\nAnalyze the attached image. If it's a business card, extract Name, Company, Phone, Email, Role and classify as LEAD_CAPTURE. If it's an invoice/receipt, extract amounts/vendor and set intent to LOG_EXPENSE. Provide a concise 'original_text' describing what was found. Original user text: {text}"
 
-    try:
-        model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=INTENT_CLASSIFIER_SYSTEM)
-        
-        contents = [prompt]
-        if media_bytes and media_type:
-            contents.append({"mime_type": media_type, "data": media_bytes})
+    # ── Failover Generation ───────────────────────────────────────────────────
+    models_to_try = [
+        "gemini-2.5-flash", 
+        "gemini-flash-lite-latest", 
+        "gemini-flash-latest"
+    ]
+    
+    last_error = None
+    raw = None
+    
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(model_name, system_instruction=INTENT_CLASSIFIER_SYSTEM)
+            contents = [prompt]
+            if media_bytes and media_type:
+                contents.append({"mime_type": media_type, "data": media_bytes})
+                
+            response = await model.generate_content_async(contents)
+            raw = response.text.strip()
+            break  # Success!
+        except Exception as e:
+            last_error = e
+            log.warning("intent.model_failover", model=model_name, error=str(e))
+            continue
             
-        response = await model.generate_content_async(contents)
-
-        raw = response.text.strip()
+    if not raw:
+        log.error("intent.all_models_failed", error=str(last_error))
+        return {"intent": "unknown", "confidence": 0, "entities": {}, "urgency": "low"}
+        
+    try:
         # Strip any accidental markdown
         if raw.startswith("```"):
             raw = raw.split("```")[1]
@@ -236,11 +266,8 @@ async def classify_intent(
                 raw = raw[4:]
         result = json.loads(raw)
         result["classification_ms"] = round((time.perf_counter() - start) * 1000)
-        # Gemini does not expose token usage via async easily in the same way, mocking loosely
         result["tokens"] = 150 
         
-        # If text was not provided (multimodal voice), we rely on Gemini's "original_text" field
-        # Update the schema if it's missing
         if not text and "original_text" not in result:
             result["original_text"] = "[Voice Note processed]"
             

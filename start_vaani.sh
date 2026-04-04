@@ -13,11 +13,11 @@ source venv/bin/activate
 
 # 3. Start AI Backend in background
 echo "🧠 Starting AI Core (FastAPI)..."
-uvicorn app.main:app --reload --port 8000 > /dev/null 2>&1 &
+uvicorn app.main:app --reload --port 8000 > backend.log 2>&1 &
 
 # 4. Start Background Worker (Celery)
 echo "⚙️ Starting Background Task Manager (Celery)..."
-celery -A app.tasks.celery_app worker --loglevel=error > /dev/null 2>&1 &
+celery -A app.tasks.celery_app worker --loglevel=error > celery.log 2>&1 &
 
 # 5. Start the beautiful Frontend
 echo "💻 Starting Frontend Dashboard..."

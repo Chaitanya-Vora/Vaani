@@ -149,7 +149,7 @@ async def _process_message_core(
     start = time.perf_counter()
 
     # ── 1. Find or onboard user ───────────────────────────────────────────────
-    user = await _get_or_create_user(channel, channel_identifier, parsed, db)
+    user = await _get_or_create_user(channel, channel_identifier, parsed, db, send_fn)
     if not user:
         await send_fn("❌ Could not identify your account. Please sign up at vaani.app")
         return
@@ -369,6 +369,7 @@ async def _get_or_create_user(
     identifier: str,
     parsed: dict,
     db: AsyncSession,
+    send_fn=None,
 ) -> Optional[User]:
     """Find user by channel identifier; create if first time."""
     if channel == MessageChannel.WHATSAPP:
@@ -410,11 +411,13 @@ async def _get_or_create_user(
         )
         db.add(sub)
         await db.flush()
-
+        
+        user.subscription = sub
+        
         log.info("user.created", user_id=str(user.id), channel=channel.value)
 
         # ── 3. Post-Creation Welcome (EA Persona) ───────────────────────────
-        if channel == MessageChannel.TELEGRAM:
+        if channel == MessageChannel.TELEGRAM and send_fn:
             welcome_msg = (
                 "Namaste! I'm Chaitanya Vora, founder of Vaani OS. 🎙️\n\n"
                 "Welcome to your new *Operational Second Brain*. I've set you up with a 7-day trial of our Starter Plan.\n\n"
@@ -481,11 +484,11 @@ async def _build_user_context(user: User, db: AsyncSession) -> dict:
     # Fetch recent Notion pages for "Memory RAG"
     recent_pages = []
     try:
-        from app.models import Integration
+        from app.models import UserIntegration
         integ_result = await db.execute(
-            sel(Integration).where(
-                Integration.user_id == user.id,
-                Integration.provider == "notion"
+            sel(UserIntegration).where(
+                UserIntegration.user_id == user.id,
+                UserIntegration.provider == "notion"
             )
         )
         notion_integ = integ_result.scalar_one_or_none()

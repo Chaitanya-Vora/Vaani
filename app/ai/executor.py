@@ -187,7 +187,8 @@ Return as JSON: {{title, summary, key_points: [], action_items: [], tags: []}}""
     try:
         note_data = json.loads(ai_result["output"])
     except Exception:
-        note_data = {"title": "Note", "summary": text, "key_points": [], "action_items": [], "tags": []}
+        log.error("executor.json_parse_failed", raw=ai_result.get("output"))
+        raise ValueError("I couldn't perfectly structure this note. Please try rephrasing.")
 
     notion_url = None
     notion_integration = _get_integration(user, "notion")
@@ -332,7 +333,8 @@ Return JSON: {{title, date, attendees: [], discussion_points: [], decisions: [],
     try:
         meeting_data = json.loads(ai_result["output"])
     except Exception:
-        meeting_data = {"title": "Meeting Notes", "discussion_points": [text], "action_items": []}
+        log.error("executor.json_parse_failed", raw=ai_result.get("output"))
+        raise ValueError("I couldn't extract the meeting format correctly. Please confirm the action items.")
 
     import asyncio
 
@@ -482,7 +484,8 @@ Return JSON: {{subject, body, tone}}""",
     try:
         email_data = json.loads(ai_result["output"])
     except Exception:
-        email_data = {"subject": "Follow-up", "body": ai_result.get("output", ""), "tone": "professional"}
+        log.error("executor.json_parse_failed", raw=ai_result.get("output"))
+        raise ValueError("I struggled to structure this email draft cleanly. Please re-state your instructions.")
 
     # Save draft to Notion
     notion_url = None
@@ -557,7 +560,8 @@ Return JSON: {{title, content, word_count, hashtags (if social)}}""",
     try:
         content_data = json.loads(ai_result["output"])
     except Exception:
-        content_data = {"title": content_type.title(), "content": ai_result.get("output", "")}
+        log.error("executor.json_parse_failed", raw=ai_result.get("output"))
+        raise ValueError(f"I couldn't finalize the {content_type} format. Could you add a bit more context?")
 
     notion_url = None
     notion_integration = _get_integration(user, "notion")

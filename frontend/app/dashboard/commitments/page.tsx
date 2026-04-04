@@ -34,7 +34,7 @@ export default function CommitmentsPage() {
   return (
     <DashboardShell user={user}>
       <div className="mb-8 px-1">
-        <h1 className="text-title-1 text-zinc-900 mb-1">Active Promises</h1>
+        <h1 className="text-title-1 text-zinc-900 mb-1">Commitments</h1>
         <p className="text-body-secondary mt-1">
           Promises made to your clients via voice. Tracked proactively by our backend.
         </p>
@@ -46,7 +46,7 @@ export default function CommitmentsPage() {
             icon={Target}
             title="No active commitments"
             description="Your promise queue is clear. Send Vaani a voice note like 'Remind me to call him at 4PM' to track a new commitment."
-            actionLabel="View Breaches"
+            actionLabel="View Breaches (Coming Soon)"
             onAction={() => console.log('Breaches')}
             centered
           />
