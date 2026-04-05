@@ -236,7 +236,7 @@ function DashboardContent() {
                         {meta.label}
                       </div>
                       <div className="flex-1 min-w-0 flex items-center justify-between">
-                        <p className="text-zinc-900 text-[13px] sm:text-[15px] font-bold truncate pr-1 sm:pr-4">{t.summary || 'Operation logged'}</p>
+                        <p className="text-zinc-900 text-[13px] sm:text-[15px] font-bold line-clamp-2 leading-snug pr-1 sm:pr-4">{t.summary || 'Operation logged'}</p>
                         <p className="text-zinc-400 text-[9px] sm:text-[11px] font-800 whitespace-nowrap hidden sm:block">
                           {new Date(t.created_at).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                         </p>
