@@ -31,7 +31,7 @@ async def execute_intent(
     Updates the AITask with results.
     """
     start = time.perf_counter()
-    intent = intent_data.get("intent", "unknown")
+    intent = intent_data.get("intent", "unknown").lower()
     entities = intent_data.get("entities", {})
     text = intent_data.get("original_text", "")
     language = intent_data.get("language", "en")

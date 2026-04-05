@@ -269,7 +269,7 @@ async def _process_message_core(
     ai_task = AITask(
         user_id=user.id,
         source_message_id=db_message.id,
-        intent=IntentType(intent_data.get("intent", "unknown")),
+        intent=IntentType(intent_data.get("intent", "unknown").lower()),
         status=TaskStatus.IN_PROGRESS,
         input_text=text_content,
         tokens_used=intent_data.get("tokens", 0),
