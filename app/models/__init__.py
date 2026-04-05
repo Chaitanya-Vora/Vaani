@@ -71,6 +71,7 @@ class IntentType(str, enum.Enum):
     ADD_TASKS = "add_tasks"
     QUERY_IDEAS = "query_ideas"
     SAVE_MEMORY = "save_memory"
+    DATA_QUERY = "data_query"
     UNKNOWN = "unknown"
 
 

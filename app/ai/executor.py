@@ -20,6 +20,28 @@ from app.compliance.india_calendar import handle_compliance_query
 log = structlog.get_logger(__name__)
 
 
+def _clean_json_output(raw: str) -> str:
+    """Strip markdown code fences and conversational preamble from Gemini's JSON output."""
+    import re
+    raw = raw.strip()
+    
+    # Strategy 1: Extract content between ```json ... ``` fences
+    fence_match = re.search(r'```(?:json)?\s*\n?(.*?)```', raw, re.DOTALL)
+    if fence_match:
+        return fence_match.group(1).strip()
+    
+    # Strategy 2: If no fences, find the first { or [ and take everything from there
+    for i, ch in enumerate(raw):
+        if ch in ('{', '['):
+            # Find the matching closing brace/bracket from the end
+            closer = '}' if ch == '{' else ']'
+            last_idx = raw.rfind(closer)
+            if last_idx > i:
+                return raw[i:last_idx + 1]
+    
+    return raw
+
+
 async def execute_intent(
     intent_data: dict,
     user: object,
@@ -185,7 +207,7 @@ Return as JSON: {{title, summary, key_points: [], action_items: [], tags: []}}""
     )
 
     try:
-        note_data = json.loads(ai_result["output"])
+        note_data = json.loads(_clean_json_output(ai_result["output"]))
     except Exception:
         log.error("executor.json_parse_failed", raw=ai_result.get("output"))
         raise ValueError("I couldn't perfectly structure this note. Please try rephrasing.")
@@ -335,7 +357,7 @@ Return JSON: {{title, date, attendees: [], discussion_points: [], decisions: [],
 
     import json
     try:
-        meeting_data = json.loads(ai_result["output"])
+        meeting_data = json.loads(_clean_json_output(ai_result["output"]))
     except Exception:
         log.error("executor.json_parse_failed", raw=ai_result.get("output"))
         raise ValueError("I couldn't extract the meeting format correctly. Please confirm the action items.")
@@ -486,7 +508,7 @@ Return JSON: {{subject, body, tone}}""",
 
     import json
     try:
-        email_data = json.loads(ai_result["output"])
+        email_data = json.loads(_clean_json_output(ai_result["output"]))
     except Exception:
         log.error("executor.json_parse_failed", raw=ai_result.get("output"))
         raise ValueError("I struggled to structure this email draft cleanly. Please re-state your instructions.")
@@ -562,7 +584,7 @@ Return JSON: {{title, content, word_count, hashtags (if social)}}""",
 
     import json
     try:
-        content_data = json.loads(ai_result["output"])
+        content_data = json.loads(_clean_json_output(ai_result["output"]))
     except Exception:
         log.error("executor.json_parse_failed", raw=ai_result.get("output"))
         raise ValueError(f"I couldn't finalize the {content_type} format. Could you add a bit more context?")
