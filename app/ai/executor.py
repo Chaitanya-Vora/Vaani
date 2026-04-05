@@ -274,8 +274,6 @@ async def _handle_create_task(text, entities, user, language):
 
 async def _handle_set_reminder(text, entities, user, language):
     """Set a WhatsApp-delivered reminder via Celery beat."""
-    from app.tasks.reminder_tasks import schedule_reminder
-
     title = entities.get("title") or entities.get("description") or text[:80]
     reminder_date = entities.get("date") or entities.get("due_date")
 
@@ -284,12 +282,18 @@ async def _handle_set_reminder(text, entities, user, language):
             "summary": "⚠️ Couldn't find a date/time. Try: 'Remind me to call Sharma ji on Friday 3pm'",
         }
 
-    task = schedule_reminder.delay(
-        user_id=str(user.id),
-        message=title,
-        remind_at=reminder_date,
-        channel=user.whatsapp_number and "whatsapp" or "telegram",
-    )
+    celery_task_id = None
+    try:
+        from app.tasks.reminder_tasks import schedule_reminder
+        task = schedule_reminder.delay(
+            user_id=str(user.id),
+            message=title,
+            remind_at=reminder_date,
+            channel=user.whatsapp_number and "whatsapp" or "telegram",
+        )
+        celery_task_id = task.id
+    except Exception as e:
+        log.warning("reminder.celery_unavailable", error=str(e))
 
     google_integration = _get_integration(user, "google_calendar")
     if google_integration and reminder_date:
@@ -305,7 +309,7 @@ async def _handle_set_reminder(text, entities, user, language):
 
     return {
         "summary": f"⏰ Reminder set: *{title}* on {reminder_date}",
-        "celery_task_id": task.id,
+        "celery_task_id": celery_task_id,
     }
 
 
@@ -765,11 +769,14 @@ async def _handle_commitment_capture(text, entities, user, language):
             recipient=recipient,
         )
 
-    from app.tasks.celery_tasks import check_gmail_for_commitments
-    check_gmail_for_commitments.apply_async(
-        args=[str(user.id), dt.isoformat(), entities],
-        eta=dt
-    )
+    try:
+        from app.tasks.celery_tasks import check_gmail_for_commitments
+        check_gmail_for_commitments.apply_async(
+            args=[str(user.id), dt.isoformat(), entities],
+            eta=dt
+        )
+    except Exception as e:
+        log.warning("commitment.celery_unavailable", error=str(e))
 
     action_button = f"\n\n[Open Commitment in Notion]({notion_url})" if notion_url else ""
     return {
@@ -1093,12 +1100,15 @@ async def _handle_add_tasks(text, entities, user, db, language):
         
         # Schedule active ping
         if t.get("due_date"):
-            schedule_reminder.delay(
-                user_id=str(user.id),
-                message=f"Priority {prio.value.upper()}: Did you finish '{desc}'?",
-                remind_at=t.get("due_date"),
-                channel="whatsapp"
-            )
+            try:
+                schedule_reminder.delay(
+                    user_id=str(user.id),
+                    message=f"Priority {prio.value.upper()}: Did you finish '{desc}'?",
+                    remind_at=t.get("due_date"),
+                    channel="whatsapp"
+                )
+            except Exception:
+                pass
             
     await db.flush()
     return {"summary": f"🎯 {created} prioritized tasks added to your queue! I'll ping you."}
@@ -1130,7 +1140,8 @@ def _get_integration(user: object, name: str):
     """Get active integration by name from user's integrations list."""
     integrations = getattr(user, "integrations", [])
     for intg in integrations:
-        if intg.integration == name and intg.is_active:
+        intg_name = intg.integration.value if hasattr(intg.integration, 'value') else str(intg.integration)
+        if intg_name == name and intg.is_active:
             return intg
     return None
 

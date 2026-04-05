@@ -375,13 +375,13 @@ async def _get_or_create_user(
     if channel == MessageChannel.WHATSAPP:
         result = await db.execute(
             select(User)
-            .options(selectinload(User.subscription))
+            .options(selectinload(User.subscription), selectinload(User.integrations))
             .where(User.whatsapp_number == identifier)
         )
     else:
         result = await db.execute(
             select(User)
-            .options(selectinload(User.subscription))
+            .options(selectinload(User.subscription), selectinload(User.integrations))
             .where(User.telegram_chat_id == identifier)
         )
 
@@ -484,11 +484,11 @@ async def _build_user_context(user: User, db: AsyncSession) -> dict:
     # Fetch recent Notion pages for "Memory RAG"
     recent_pages = []
     try:
-        from app.models import UserIntegration
+        from app.models import UserIntegration, IntegrationName
         integ_result = await db.execute(
             sel(UserIntegration).where(
                 UserIntegration.user_id == user.id,
-                UserIntegration.provider == "notion"
+                UserIntegration.integration == IntegrationName.NOTION
             )
         )
         notion_integ = integ_result.scalar_one_or_none()
